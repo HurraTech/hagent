@@ -52,6 +52,7 @@ var (
 	certFile   = flag.String("cert_file", "", "The TLS cert file")
 	keyFile    = flag.String("key_file", "", "The TLS key file")
 	jsonDBFile = flag.String("json_db_file", "", "A json file containing a list of features")
+	listen     = flag.String("listen", "127.0.0.1", "Which interface IP to listen on")
 	port       = flag.Int("port", 10000, "The server port")
 	uid		   = flag.Int("uid", -1, "Run commands using this user ID")
 )
@@ -85,7 +86,7 @@ func newServer() *hurraAgentServer {
 
 func main() {
 	flag.Parse()
-	lis, err := net.Listen("tcp", fmt.Sprintf("172.18.0.1:%d", *port))
+	lis, err := net.Listen("tcp", fmt.Sprintf("%s:%d", *listen, *port))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
