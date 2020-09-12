@@ -8,7 +8,59 @@ option java_outer_classname = "RouteGuideProto";
 package proto;
 
 service HurraAgent {
+    rpc MountDrive(MountDriveRequest) returns (MountDriveResponse) {}
+    rpc UnmountDrive(UnmountDriveRequest) returns (UnmountDriveResponse) {}
+    rpc GetDrives(GetDrivesRequest) returns (GetDrivesResponse) {}
     rpc ExecCommand(Command) returns (Result) {}
+}
+
+message MountDriveResponse {
+    repeated string errors = 1;
+    bool is_successful = 2;
+}
+
+message MountDriveRequest {
+    string device_file = 1;
+    string mount_point = 2;
+}
+
+message UnmountDriveRequest {
+    string device_file = 1;
+}
+
+message UnmountDriveResponse {
+    string error = 1;
+    bool is_successful = 2;
+}
+
+message GetDrivesRequest {
+}
+
+message GetDrivesResponse {
+    repeated Drive drives = 1;
+}
+
+message Drive {
+    string name = 1;
+    string device_file = 2;
+    uint64 size_bytes = 3;
+    bool is_removable = 4;
+    string type = 5;
+    string serial_number = 6;
+    string storage_controller = 7;
+    repeated Partition partitions = 8; 
+}
+
+message Partition {
+    string name = 1;
+    string device_file = 2;
+    uint64 size_bytes = 3;
+    uint64 available_bytes = 4;
+    string filesystem = 5;
+    string mount_point = 6;
+    string label = 7;
+    bool is_read_only = 8;
+
 }
 
 message Result {
@@ -17,6 +69,6 @@ message Result {
 }
 
 message Command {
-  string command = 3;
+  string command = 1;
 }
 

@@ -1,0 +1,8 @@
+stats (/proc/meminfo)
+get_drives (lsblk + blkid)
+get_usage (df)
+mount_partition 
+unmout_partition
+mount_google_drive
+run_app / exec_app  / stop_app (dockre-compose)
+index (run fscrawler)
