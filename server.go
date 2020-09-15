@@ -1,22 +1,22 @@
 package main
+
 import (
     "context"
-    "syscall"
     "flag"
     "fmt"
     "net"
     "os"
-    "strings"
-    "strconv"
     "os/exec"
+    "strconv"
+    "strings"
+    "syscall"
 
+    "github.com/jaypipes/ghw"
     "google.golang.org/grpc"
     "google.golang.org/grpc/credentials"
-    "github.com/jaypipes/ghw"
-    
+
     log "github.com/sirupsen/logrus"
     pb "hurracloud.io/agent/proto"
-
 )
 
 var (
@@ -50,24 +50,24 @@ func (s *hurraAgentServer) GetDrives(ctx context.Context, drive *pb.GetDrivesReq
     for _, disk := range block.Disks {
         log.Debug("Found Disk: ", disk)
         drive := &pb.Drive{
-            Name: disk.Name,
-            DeviceFile: "/dev/" + disk.Name,
-            SizeBytes: disk.SizeBytes,
-            IsRemovable: disk.IsRemovable,
-            Type: disk.DriveType.String(),
-            SerialNumber: disk.SerialNumber,
+            Name:              disk.Name,
+            DeviceFile:        "/dev/" + disk.Name,
+            SizeBytes:         disk.SizeBytes,
+            IsRemovable:       disk.IsRemovable,
+            Type:              disk.DriveType.String(),
+            SerialNumber:      disk.SerialNumber,
             StorageController: disk.StorageController.String(),
         }
         response.Drives = append(response.Drives, drive)
         for _, partition := range disk.Partitions {
             log.Debug("Found Partition: ", partition)
             partition := &pb.Partition{
-                Name: partition.Name,
-                DeviceFile: "/dev/" + partition.Name,
-                SizeBytes: partition.SizeBytes,
-                Filesystem: partition.Type,
-                MountPoint: partition.MountPoint,
-                IsReadOnly: partition.IsReadOnly,
+                Name:           partition.Name,
+                DeviceFile:     "/dev/" + partition.Name,
+                SizeBytes:      partition.SizeBytes,
+                Filesystem:     partition.Type,
+                MountPoint:     partition.MountPoint,
+                IsReadOnly:     partition.IsReadOnly,
                 AvailableBytes: 0,
             }
 
@@ -87,7 +87,7 @@ func (s *hurraAgentServer) GetDrives(ctx context.Context, drive *pb.GetDrivesReq
                 } else {
                     log.Errorf("Could not determine mounted partition free space %v", err)
                 }
-            } 
+            }
 
             if partition.Filesystem == "" {
                 //ghw does not return Filesystem for unmounted partition, attempt to find it on our own
@@ -101,7 +101,7 @@ func (s *hurraAgentServer) GetDrives(ctx context.Context, drive *pb.GetDrivesReq
 
             }
 
-            // ghw does not return labels, attempt to find it on our own 
+            // ghw does not return labels, attempt to find it on our own
             log.Debug("Attempt to find Label for Partition ", partition.Name)
             cmd := exec.Command("sh", "-c", fmt.Sprintf("lsblk -o label %s | tail -n +2", partition.DeviceFile))
             output, err := cmd.Output()
@@ -137,6 +137,12 @@ func (s *hurraAgentServer) MountDrive(ctx context.Context, drive *pb.MountDriveR
             response.IsSuccessful = false
             goto failed
         }
+        errDir = os.Chown(drive.MountPoint, *jawharUid, *jawharUid)
+        if errDir != nil {
+            response.Errors = append(response.Errors, fmt.Sprintf("Failed to chown mount point %s to uid %s (%s)", drive.MountPoint, jawharUid, errDir.Error()))
+            response.IsSuccessful = false
+            goto failed
+        }
     }
 
     // Attempt to mount using default options
@@ -144,13 +150,13 @@ func (s *hurraAgentServer) MountDrive(ctx context.Context, drive *pb.MountDriveR
 
     // First try with default options
     cmd = exec.Command("mount", mountArgs...)
-    log.Debug("Running command: %v", cmd)
+    log.Debug("Running command: ", cmd)
     out, err = cmd.CombinedOutput()
     if err != nil {
         // Default options failed
         log.Printf("Failed to mount %s with default options: %s", drive.DeviceFile, err.Error())
         log.Printf("Mounting using %s ntfs-3g", drive.DeviceFile)
-        response.Errors = append(response.Errors, fmt.Sprintf("Mount command failed [default options]: %s (%s)", out, err.Error() ) )
+        response.Errors = append(response.Errors, fmt.Sprintf("Mount command failed [default options]: %s (%s)", out, err.Error()))
 
         // Try with ntfs-3g driver
         mountArgs = append(mountArgs, "-t", "ntfs-3g")
@@ -158,12 +164,12 @@ func (s *hurraAgentServer) MountDrive(ctx context.Context, drive *pb.MountDriveR
         out, err = cmd.CombinedOutput()
         if err != nil {
             log.Printf("Failed to mount %s using ntfs-3g: %s", drive.DeviceFile, err.Error())
-            response.Errors = append(response.Errors, fmt.Sprintf("Mount command failed [ntfs-3g]: %s (%s)", out, err.Error() ) )
+            response.Errors = append(response.Errors, fmt.Sprintf("Mount command failed [ntfs-3g]: %s (%s)", out, err.Error()))
             response.IsSuccessful = false
         }
     }
 
-failed: 
+failed:
     if response.IsSuccessful != true {
         error = fmt.Errorf("All mount attempts failed: %s", response.Errors)
         log.Printf("Mount failed: %s", error)
@@ -171,7 +177,6 @@ failed:
 
     return response, error
 }
-
 
 // Mount specified device on specified mount point.
 // Create mount point if not already exists
@@ -194,20 +199,19 @@ func (s *hurraAgentServer) UnmountDrive(ctx context.Context, drive *pb.UnmountDr
     if err != nil {
         log.Printf("Failed to unmount %s: %s", drive.DeviceFile, err.Error())
         response.Error = fmt.Sprintf("Umount command failed: %s (%s)", out, err.Error())
-        error = fmt.Errorf(response.Error)        
+        error = fmt.Errorf(response.Error)
         response.IsSuccessful = false
     }
 
     return response, error
 }
 
-
 // ExecCommand returns the feature at the given point.
 func (s *hurraAgentServer) ExecCommand(ctx context.Context, command *pb.Command) (*pb.Result, error) {
     cmd := exec.Command("bash", "-c", command.Command)
     cmd.SysProcAttr = &syscall.SysProcAttr{}
-    if (*uid != -1) {
-       cmd.SysProcAttr.Credential = &syscall.Credential{Uid: uint32(*uid), Gid: uint32(*uid)}
+    if *uid != -1 {
+        cmd.SysProcAttr.Credential = &syscall.Credential{Uid: uint32(*uid), Gid: uint32(*uid)}
     }
     out, err := cmd.CombinedOutput()
     exitCode := int32(0)
@@ -217,7 +221,7 @@ func (s *hurraAgentServer) ExecCommand(ctx context.Context, command *pb.Command)
     }
     log.Printf("Command: %s. Output: %s", command.Command, out)
     result := &pb.Result{Message: string(out), ExitCode: exitCode}
-    return result,nil
+    return result, nil
 }
 
 func newServer() *hurraAgentServer {
