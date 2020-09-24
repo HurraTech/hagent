@@ -4,7 +4,10 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"net"
+	"net/http"
 	"os"
 	"os/exec"
 	"strconv"
@@ -215,6 +218,48 @@ func (s *hurraAgentServer) UnmountDrive(ctx context.Context, drive *pb.UnmountDr
 	}
 
 	return response, error
+}
+
+// LoadImage load container image.
+func (s *hurraAgentServer) LoadImage(ctx context.Context, req *pb.LoadImageRequest) (*pb.LoadImageResponse, error) {
+	log.Debugf("Downloading image %s", req.URL)
+
+	// Open tmp file for writing image to
+	img, err := ioutil.TempFile("", "image")
+	if err != nil {
+		return nil, fmt.Errorf("Could not create temp file: %s", err)
+	}
+	log.Debugf("Writing to %s", img.Name())
+	defer img.Close()
+	defer os.Remove(img.Name())
+
+	// Open image url
+	resp, err := http.Get(req.URL)
+	if err != nil {
+		return nil, fmt.Errorf("Could not open URL: %s: %s", req.URL, err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("Image server returned bad status: %s", resp.Status)
+	}
+
+	_, err = io.Copy(img, resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("Error downloading image: %s: %s", req.URL, err)
+	}
+
+	// Load image in docker daemon
+	log.Debugf("Loading image in Docker")
+	cmd := exec.Command("docker", "load", "-i", img.Name())
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return nil, fmt.Errorf("Error loading image: %s", err)
+	}
+	strOut := strings.Replace(string(out), "\n", " ", -1)
+	log.Debugf("Done. Output: '%s'", strOut)
+
+	return &pb.LoadImageResponse{}, nil
 }
 
 // ExecCommand returns the feature at the given point.

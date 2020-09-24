@@ -8,7 +8,16 @@ service HurraAgent {
     rpc MountDrive(MountDriveRequest) returns (MountDriveResponse) {}
     rpc UnmountDrive(UnmountDriveRequest) returns (UnmountDriveResponse) {}
     rpc GetDrives(GetDrivesRequest) returns (GetDrivesResponse) {}
+    rpc LoadImage(LoadImageRequest) returns (LoadImageResponse) {}
     rpc ExecCommand(Command) returns (Result) {}
+}
+
+message LoadImageRequest {
+    string URL = 1;
+}
+
+message LoadImageResponse {
+
 }
 
 message MountDriveResponse {
@@ -45,7 +54,7 @@ message Drive {
     string type = 5;
     string serial_number = 6;
     string storage_controller = 7;
-    repeated Partition partitions = 8; 
+    repeated Partition partitions = 8;
 }
 
 message Partition {
