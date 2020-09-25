@@ -317,6 +317,14 @@ func (s *hurraAgentServer) KillContainer(ctx context.Context, req *pb.KillContai
 	cmd := exec.Command("docker", "kill", req.Name)
 	out, err := cmd.CombinedOutput()
 	strOut := strings.Replace(string(out), "\n", " ", -1)
+
+	if strings.Contains(strOut, "is not running") {
+		log.Warningf("Container %s was stoppe. Removing it.", req.Name)
+		cmd := exec.Command("docker", "rm", req.Name)
+		out, err = cmd.CombinedOutput()
+		strOut = strings.Replace(string(out), "\n", " ", -1)
+	}
+
 	if err != nil {
 		if !strings.Contains(strOut, "No such container") {
 			log.Errorf("Failed to kill container. Command Output: %s", strOut)
