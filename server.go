@@ -11,6 +11,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"encoding/json"
 	"strconv"
 	"strings"
 	"syscall"
@@ -290,7 +291,13 @@ func (s *hurraAgentServer) RunContainer(ctx context.Context, req *pb.RunContaine
 
 	// Start containers
 	log.Debugf("Run containers")
-	cmd := exec.Command("docker", "run", "--rm", "-d", "--name", req.Name, "-p", fmt.Sprintf("%d:%d", req.PortMappingSource, req.PortMappingTarget), req.Image)
+	cmdArgs := []string{"run", "--rm", "-d", "--name", req.Name,
+		"-p", fmt.Sprintf("%d:%d", req.PortMappingSource, req.PortMappingTarget)}
+	for _, env := range strings.Split(req.Env, ",") {
+		cmdArgs = append(cmdArgs,"-e", env )
+	}
+	cmdArgs = append(cmdArgs, req.Image)
+	cmd := exec.Command("docker", cmdArgs...)
 	out, err := cmd.CombinedOutput()
 	strOut := strings.Replace(string(out), "\n", " ", -1)
 	if err != nil {
@@ -391,12 +398,41 @@ func (s *hurraAgentServer) RemoveContainerSpec(ctx context.Context, req *pb.Cont
 
 // Exec command in a container
 func (s *hurraAgentServer) ExecInContainerSpec(ctx context.Context, req *pb.ExecInContainerSpecRequest) (*pb.ExecInContainerSpecResponse, error) {
-	log.Debugf("Running containers at root context %s", req.Context)
+	log.Debugf("Exec command request. Container=%s. Command=%s, Env=%s", req.ContainerName, req.Cmd, req.Env)
 	composeFilename := fmt.Sprintf("%s.yaml", req.Name)
 
-	// Remove containers
-	log.Debugf("Executing '%s' in container %s/%s", req.Cmd, req.Name, req.ContainerName)
-	cmd := exec.Command("docker-compose", "-f", composeFilename, "-p", req.Name, "exec", req.Cmd)
+	cmdArgs := []string{"-f", composeFilename, "-p", req.Name, "exec"}
+
+	// Prepand -e KEY=VAL before exec command arg
+	envMap := make(map[string]interface{})
+	err := json.Unmarshal([]byte(req.Env), &envMap)
+	if err != nil {
+		log.Errorf("Error parsing env map: %s", err)
+		return nil, fmt.Errorf("Error parsing env map: %s: %s", req.Env, err)
+	}
+
+	for key, val := range envMap {
+		cmdArgs = append(cmdArgs, "-e", fmt.Sprintf("%s=%s", key, val) )
+	}
+
+	// Append -T containerName COMMAND
+	cmdArgs = append(cmdArgs, "-T", req.ContainerName, req.Cmd)
+
+	// Append command ARGS
+	var argList []string
+	err = json.Unmarshal([]byte(req.Args), &argList)
+	if err != nil {
+		log.Errorf("Error parsing args list: %s", err)
+		return nil, fmt.Errorf("Error parsing args list: %s: %s", req.Args, err)
+	}
+
+	for _, val := range argList {
+		cmdArgs = append(cmdArgs, val)
+	}
+
+	cmd := exec.Command("docker-compose", cmdArgs...)
+
+	log.Debugf("Executing in container %s/%s: %v", req.Cmd, req.Name, req.ContainerName, cmd)
 	cmd.Dir = req.Context
 	out, err := cmd.CombinedOutput()
 	strOut := strings.Replace(string(out), "\n", " ", -1)
@@ -406,8 +442,47 @@ func (s *hurraAgentServer) ExecInContainerSpec(ctx context.Context, req *pb.Exec
 	}
 	log.Debugf("Done. Output: '%s'", strOut)
 
-	return &pb.ExecInContainerSpecResponse{}, nil
+	return &pb.ExecInContainerSpecResponse{Output: string(out)}, nil
 }
+
+// Stop a specific container in a container spec file
+func (s *hurraAgentServer) StopContainerInSpec(ctx context.Context, req *pb.ContainerSpecRequest) (*pb.ContainerSpecResponse, error) {
+	log.Debugf("Stop container in sepc request. Spec=%s. Container=%s", req.Name, req.ContainerName)
+	composeFilename := fmt.Sprintf("%s.yaml", req.Name)
+
+	cmd := exec.Command("docker-compose", "-f", composeFilename, "-p", req.Name, "stop", req.ContainerName)
+
+	cmd.Dir = req.Context
+	out, err := cmd.CombinedOutput()
+	strOut := strings.Replace(string(out), "\n", " ", -1)
+	if err != nil {
+		log.Errorf("Failed to stop container. Command Output: %s", strOut)
+		return nil, fmt.Errorf("Error stopping container: %s. Output: %s", err, strOut)
+	}
+	log.Debugf("Done. Output: '%s'", strOut)
+
+	return &pb.ContainerSpecResponse{}, nil
+}
+
+// Start a specific container in a container spec file
+func (s *hurraAgentServer) StartContainerInSpec(ctx context.Context, req *pb.ContainerSpecRequest) (*pb.ContainerSpecResponse, error) {
+	log.Debugf("Start container in sepc request. Spec=%s. Container=%s", req.Name, req.ContainerName)
+	composeFilename := fmt.Sprintf("%s.yaml", req.Name)
+
+	cmd := exec.Command("docker-compose", "-f", composeFilename, "-p", req.Name, "start", req.ContainerName)
+
+	cmd.Dir = req.Context
+	out, err := cmd.CombinedOutput()
+	strOut := strings.Replace(string(out), "\n", " ", -1)
+	if err != nil {
+		log.Errorf("Failed to start container. Command Output: %s", strOut)
+		return nil, fmt.Errorf("Error stopping container: %s. Output: %s", err, strOut)
+	}
+	log.Debugf("Done. Output: '%s'", strOut)
+
+	return &pb.ContainerSpecResponse{}, nil
+}
+
 
 // ExecCommand returns the feature at the given point.
 func (s *hurraAgentServer) ExecCommand(ctx context.Context, command *pb.Command) (*pb.Result, error) {

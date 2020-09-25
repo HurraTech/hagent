@@ -14,6 +14,8 @@ service HurraAgent {
     rpc KillContainer(KillContainerRequest) returns (KillContainerResponse) {}
     rpc RunContainerSpec(ContainerSpecRequest) returns (ContainerSpecResponse) {}
     rpc StopContainerSpec(ContainerSpecRequest) returns (ContainerSpecResponse) {}
+    rpc StartContainerInSpec(ContainerSpecRequest) returns (ContainerSpecResponse) {}
+    rpc StopContainerInSpec(ContainerSpecRequest) returns (ContainerSpecResponse) {}
     rpc RemoveContainerSpec(ContainerSpecRequest) returns (ContainerSpecResponse) {}
     rpc ExecInContainerSpec(ExecInContainerSpecRequest) returns (ExecInContainerSpecResponse) {}
 
@@ -25,6 +27,7 @@ message RunContainerRequest {
     string image = 2;
     uint32 port_mapping_source = 3;
     uint32 port_mapping_target = 4;
+    string env = 5;
 }
 
 message RunContainerResponse {
@@ -44,6 +47,7 @@ message ContainerSpecRequest {
     string name = 1;
     string context = 2;
     string spec = 3;
+    string container_name = 4;
 }
 
 message ContainerSpecResponse {
@@ -55,9 +59,12 @@ message ExecInContainerSpecRequest {
     string spec = 3;
     string container_name = 4;
     string cmd = 5;
+    string args = 6;
+    string env = 7;
 }
 
 message ExecInContainerSpecResponse {
+    string output = 1;
 }
 
 
