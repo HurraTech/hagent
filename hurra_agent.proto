@@ -10,24 +10,46 @@ service HurraAgent {
     rpc GetDrives(GetDrivesRequest) returns (GetDrivesResponse) {}
     rpc LoadImage(LoadImageRequest) returns (LoadImageResponse) {}
     rpc UnloadImage(UnloadImageRequest) returns (UnloadImageResponse) {}
-    rpc RunContainers(ContainersRequest) returns (ContainersResponse) {}
-    rpc StopContainers(ContainersRequest) returns (ContainersResponse) {}
-    rpc RemoveContainers(ContainersRequest) returns (ContainersResponse) {}
-    rpc ExecInContainer(ExecInContainerRequest) returns (ExecInContainerResponse) {}
+    rpc RunContainer(RunContainerRequest) returns (RunContainerResponse) {}
+    rpc KillContainer(KillContainerRequest) returns (KillContainerResponse) {}
+    rpc RunContainerSpec(ContainerSpecRequest) returns (ContainerSpecResponse) {}
+    rpc StopContainerSpec(ContainerSpecRequest) returns (ContainerSpecResponse) {}
+    rpc RemoveContainerSpec(ContainerSpecRequest) returns (ContainerSpecResponse) {}
+    rpc ExecInContainerSpec(ExecInContainerSpecRequest) returns (ExecInContainerSpecResponse) {}
 
     rpc ExecCommand(Command) returns (Result) {}
 }
 
-message ContainersRequest {
+message RunContainerRequest {
+    string name = 1;
+    string image = 2;
+    uint32 port_mapping_source = 3;
+    uint32 port_mapping_target = 4;
+}
+
+message RunContainerResponse {
+
+}
+
+message KillContainerRequest {
+    string name = 1;
+}
+
+message KillContainerResponse {
+
+}
+
+
+message ContainerSpecRequest {
     string name = 1;
     string context = 2;
     string spec = 3;
 }
 
-message ContainersResponse {
+message ContainerSpecResponse {
 }
 
-message ExecInContainerRequest {
+message ExecInContainerSpecRequest {
     string name = 1;
     string context = 2;
     string spec = 3;
@@ -35,7 +57,7 @@ message ExecInContainerRequest {
     string cmd = 5;
 }
 
-message ExecInContainerResponse {
+message ExecInContainerSpecResponse {
 }
 
 

@@ -46,7 +46,7 @@ var systemPartitions = map[string]bool{
 
 // Returns list of drives and their partitions
 func (s *hurraAgentServer) GetDrives(ctx context.Context, drive *pb.GetDrivesRequest) (*pb.GetDrivesResponse, error) {
-	log.Info("Request to Get Drives")
+	log.Tracef("Request to Get Drives")
 	block, err := ghw.Block()
 	if err != nil {
 		error := fmt.Errorf("Error getting block storage info:", err)
@@ -95,7 +95,7 @@ func (s *hurraAgentServer) GetDrives(ctx context.Context, drive *pb.GetDrivesReq
 					freespace, err := strconv.ParseUint(strings.Trim(string(output), "\n"), 10, 64)
 					if err == nil {
 						partition.AvailableBytes = freespace
-						log.Debugf("Determined Available Bytes for %v to be %v", partition.Name, partition.AvailableBytes)
+						log.Tracef("Determined Available Bytes for %v to be %v", partition.Name, partition.AvailableBytes)
 					} else {
 						log.Errorf("Could not parse df command output: %s: %s", output, err)
 					}
@@ -117,7 +117,7 @@ func (s *hurraAgentServer) GetDrives(ctx context.Context, drive *pb.GetDrivesReq
 			}
 
 			// ghw does not return labels, attempt to find it on our own
-			log.Debug("Attempt to find Label for Partition ", partition.Name)
+			log.Trace("Attempt to find Label for Partition ", partition.Name)
 			cmd := exec.Command("sh", "-c", fmt.Sprintf("lsblk -o label %s | tail -n +2", partition.DeviceFile))
 			output, err := cmd.Output()
 			if err == nil {
@@ -254,10 +254,11 @@ func (s *hurraAgentServer) LoadImage(ctx context.Context, req *pb.LoadImageReque
 	log.Debugf("Loading image in Docker")
 	cmd := exec.Command("docker", "load", "-i", img.Name())
 	out, err := cmd.CombinedOutput()
+	strOut := strings.Replace(string(out), "\n", " ", -1)
 	if err != nil {
+		log.Errorf("Failed to load image. Command Output: %s", strOut)
 		return nil, fmt.Errorf("Error loading image: %s", err)
 	}
-	strOut := strings.Replace(string(out), "\n", " ", -1)
 	log.Debugf("Done. Output: '%s'", strOut)
 
 	return &pb.LoadImageResponse{}, nil
@@ -267,20 +268,63 @@ func (s *hurraAgentServer) UnloadImage(ctx context.Context, req *pb.UnloadImageR
 	log.Debugf("Unloading image %s", req.Tag)
 
 	// Load image in docker daemon
-	log.Debugf("Unloading image from Docker")
 	cmd := exec.Command("docker", "rmi", req.Tag)
 	out, err := cmd.CombinedOutput()
-	if err != nil {
-		return nil, fmt.Errorf("Error unloading image: %s", err)
-	}
 	strOut := strings.Replace(string(out), "\n", " ", -1)
+	if err != nil {
+		if !strings.Contains(strOut, "No such image") {
+			log.Errorf("Failed to remove image. Command Output: %s", strOut)
+			return nil, fmt.Errorf("Error unloading image: %s", err)
+		} else {
+			log.Warningf("Image %s already did not exist", req.Tag)
+		}
+	}
 	log.Debugf("Done. Output: '%s'", strOut)
 
 	return &pb.UnloadImageResponse{}, nil
 }
 
-// Run containers (docker compose file).
-func (s *hurraAgentServer) RunContainers(ctx context.Context, req *pb.ContainersRequest) (*pb.ContainersResponse, error) {
+// Run single container.
+func (s *hurraAgentServer) RunContainer(ctx context.Context, req *pb.RunContainerRequest) (*pb.RunContainerResponse, error) {
+	log.Debugf("Running container image %s with name %s and port mapping %d:%d", req.Image, req.Name, req.PortMappingSource, req.PortMappingTarget)
+
+	// Start containers
+	log.Debugf("Run containers")
+	cmd := exec.Command("docker", "run", "--rm", "-d", "--name", req.Name, "-p", fmt.Sprintf("%d:%d", req.PortMappingSource, req.PortMappingTarget), req.Image)
+	out, err := cmd.CombinedOutput()
+	strOut := strings.Replace(string(out), "\n", " ", -1)
+	if err != nil {
+		log.Errorf("Failed to start container. Command Output: %s", strOut)
+		return nil, fmt.Errorf("Error starting containers: %s. Output: %s", err, strOut)
+	}
+	log.Debugf("Done. Output: '%s'", strOut)
+
+	return &pb.RunContainerResponse{}, nil
+}
+
+// Kill single container
+func (s *hurraAgentServer) KillContainer(ctx context.Context, req *pb.KillContainerRequest) (*pb.KillContainerResponse, error) {
+	log.Debugf("Killing container %s", req.Name)
+
+	// Kill container
+	cmd := exec.Command("docker", "kill", req.Name)
+	out, err := cmd.CombinedOutput()
+	strOut := strings.Replace(string(out), "\n", " ", -1)
+	if err != nil {
+		if !strings.Contains(strOut, "No such container") {
+			log.Errorf("Failed to kill container. Command Output: %s", strOut)
+			return nil, fmt.Errorf("Error starting containers: %s. Output: %s", err, strOut)
+		} else {
+			log.Warningf("Container %s did not exist or was already killed", req.Name)
+		}
+	}
+	log.Debugf("Done. Output: '%s'", strOut)
+
+	return &pb.KillContainerResponse{}, nil
+}
+
+// Run container spec (docker compose file).
+func (s *hurraAgentServer) RunContainerSpec(ctx context.Context, req *pb.ContainerSpecRequest) (*pb.ContainerSpecResponse, error) {
 	log.Debugf("Running containers at root context %s", req.Context)
 	composeFilename := fmt.Sprintf("%s.yaml", req.Name)
 
@@ -297,16 +341,16 @@ func (s *hurraAgentServer) RunContainers(ctx context.Context, req *pb.Containers
 	out, err := cmd.CombinedOutput()
 	strOut := strings.Replace(string(out), "\n", " ", -1)
 	if err != nil {
-		log.Printf("Failed to start containers. Command Output: %s", strOut)
+		log.Errorf("Failed to start containers. Command Output: %s", strOut)
 		return nil, fmt.Errorf("Error starting containers: %s. Output: %s", err, strOut)
 	}
 	log.Debugf("Done. Output: '%s'", strOut)
 
-	return &pb.ContainersResponse{}, nil
+	return &pb.ContainerSpecResponse{}, nil
 }
 
 // Stop containers
-func (s *hurraAgentServer) StopContainers(ctx context.Context, req *pb.ContainersRequest) (*pb.ContainersResponse, error) {
+func (s *hurraAgentServer) StopContainerSpec(ctx context.Context, req *pb.ContainerSpecRequest) (*pb.ContainerSpecResponse, error) {
 	log.Debugf("Running containers at root context %s", req.Context)
 	composeFilename := fmt.Sprintf("%s.yaml", req.Name)
 
@@ -317,16 +361,16 @@ func (s *hurraAgentServer) StopContainers(ctx context.Context, req *pb.Container
 	out, err := cmd.CombinedOutput()
 	strOut := strings.Replace(string(out), "\n", " ", -1)
 	if err != nil {
-		log.Printf("Failed to stop containers. Command Output: %s", strOut)
+		log.Errorf("Failed to stop containers. Command Output: %s", strOut)
 		return nil, fmt.Errorf("Error stopping containers: %s. Output: %s", err, strOut)
 	}
 	log.Debugf("Done. Output: '%s'", strOut)
 
-	return &pb.ContainersResponse{}, nil
+	return &pb.ContainerSpecResponse{}, nil
 }
 
 // Remove containers
-func (s *hurraAgentServer) RemoveContainers(ctx context.Context, req *pb.ContainersRequest) (*pb.ContainersResponse, error) {
+func (s *hurraAgentServer) RemoveContainerSpec(ctx context.Context, req *pb.ContainerSpecRequest) (*pb.ContainerSpecResponse, error) {
 	log.Debugf("Running containers at root context %s", req.Context)
 	composeFilename := fmt.Sprintf("%s.yaml", req.Name)
 
@@ -337,16 +381,16 @@ func (s *hurraAgentServer) RemoveContainers(ctx context.Context, req *pb.Contain
 	out, err := cmd.CombinedOutput()
 	strOut := strings.Replace(string(out), "\n", " ", -1)
 	if err != nil {
-		log.Printf("Failed to remove containers. Command Output: %s", strOut)
+		log.Errorf("Failed to remove containers. Command Output: %s", strOut)
 		return nil, fmt.Errorf("Error remove containers: %s. Output: %s", err, strOut)
 	}
 	log.Debugf("Done. Output: '%s'", strOut)
 
-	return &pb.ContainersResponse{}, nil
+	return &pb.ContainerSpecResponse{}, nil
 }
 
 // Exec command in a container
-func (s *hurraAgentServer) ExecInContainer(ctx context.Context, req *pb.ExecInContainerRequest) (*pb.ExecInContainerResponse, error) {
+func (s *hurraAgentServer) ExecInContainerSpec(ctx context.Context, req *pb.ExecInContainerSpecRequest) (*pb.ExecInContainerSpecResponse, error) {
 	log.Debugf("Running containers at root context %s", req.Context)
 	composeFilename := fmt.Sprintf("%s.yaml", req.Name)
 
@@ -357,12 +401,12 @@ func (s *hurraAgentServer) ExecInContainer(ctx context.Context, req *pb.ExecInCo
 	out, err := cmd.CombinedOutput()
 	strOut := strings.Replace(string(out), "\n", " ", -1)
 	if err != nil {
-		log.Printf("Failed to exec in container. Command Output: %s", strOut)
+		log.Errorf("Failed to exec in container. Command Output: %s", strOut)
 		return nil, fmt.Errorf("Error exec in container: %s. Output: %s", err, strOut)
 	}
 	log.Debugf("Done. Output: '%s'", strOut)
 
-	return &pb.ExecInContainerResponse{}, nil
+	return &pb.ExecInContainerSpecResponse{}, nil
 }
 
 // ExecCommand returns the feature at the given point.
