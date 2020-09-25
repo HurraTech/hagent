@@ -24,6 +24,194 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
+type ContainersRequest struct {
+	Name                 string   `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Context              string   `protobuf:"bytes,2,opt,name=context,proto3" json:"context,omitempty"`
+	Spec                 string   `protobuf:"bytes,3,opt,name=spec,proto3" json:"spec,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *ContainersRequest) Reset()         { *m = ContainersRequest{} }
+func (m *ContainersRequest) String() string { return proto.CompactTextString(m) }
+func (*ContainersRequest) ProtoMessage()    {}
+func (*ContainersRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_d1a676bd7648f983, []int{0}
+}
+
+func (m *ContainersRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ContainersRequest.Unmarshal(m, b)
+}
+func (m *ContainersRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ContainersRequest.Marshal(b, m, deterministic)
+}
+func (m *ContainersRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ContainersRequest.Merge(m, src)
+}
+func (m *ContainersRequest) XXX_Size() int {
+	return xxx_messageInfo_ContainersRequest.Size(m)
+}
+func (m *ContainersRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_ContainersRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ContainersRequest proto.InternalMessageInfo
+
+func (m *ContainersRequest) GetName() string {
+	if m != nil {
+		return m.Name
+	}
+	return ""
+}
+
+func (m *ContainersRequest) GetContext() string {
+	if m != nil {
+		return m.Context
+	}
+	return ""
+}
+
+func (m *ContainersRequest) GetSpec() string {
+	if m != nil {
+		return m.Spec
+	}
+	return ""
+}
+
+type ContainersResponse struct {
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *ContainersResponse) Reset()         { *m = ContainersResponse{} }
+func (m *ContainersResponse) String() string { return proto.CompactTextString(m) }
+func (*ContainersResponse) ProtoMessage()    {}
+func (*ContainersResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_d1a676bd7648f983, []int{1}
+}
+
+func (m *ContainersResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ContainersResponse.Unmarshal(m, b)
+}
+func (m *ContainersResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ContainersResponse.Marshal(b, m, deterministic)
+}
+func (m *ContainersResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ContainersResponse.Merge(m, src)
+}
+func (m *ContainersResponse) XXX_Size() int {
+	return xxx_messageInfo_ContainersResponse.Size(m)
+}
+func (m *ContainersResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_ContainersResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ContainersResponse proto.InternalMessageInfo
+
+type ExecInContainerRequest struct {
+	Name                 string   `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Context              string   `protobuf:"bytes,2,opt,name=context,proto3" json:"context,omitempty"`
+	Spec                 string   `protobuf:"bytes,3,opt,name=spec,proto3" json:"spec,omitempty"`
+	ContainerName        string   `protobuf:"bytes,4,opt,name=container_name,json=containerName,proto3" json:"container_name,omitempty"`
+	Cmd                  string   `protobuf:"bytes,5,opt,name=cmd,proto3" json:"cmd,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *ExecInContainerRequest) Reset()         { *m = ExecInContainerRequest{} }
+func (m *ExecInContainerRequest) String() string { return proto.CompactTextString(m) }
+func (*ExecInContainerRequest) ProtoMessage()    {}
+func (*ExecInContainerRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_d1a676bd7648f983, []int{2}
+}
+
+func (m *ExecInContainerRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ExecInContainerRequest.Unmarshal(m, b)
+}
+func (m *ExecInContainerRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ExecInContainerRequest.Marshal(b, m, deterministic)
+}
+func (m *ExecInContainerRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ExecInContainerRequest.Merge(m, src)
+}
+func (m *ExecInContainerRequest) XXX_Size() int {
+	return xxx_messageInfo_ExecInContainerRequest.Size(m)
+}
+func (m *ExecInContainerRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_ExecInContainerRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ExecInContainerRequest proto.InternalMessageInfo
+
+func (m *ExecInContainerRequest) GetName() string {
+	if m != nil {
+		return m.Name
+	}
+	return ""
+}
+
+func (m *ExecInContainerRequest) GetContext() string {
+	if m != nil {
+		return m.Context
+	}
+	return ""
+}
+
+func (m *ExecInContainerRequest) GetSpec() string {
+	if m != nil {
+		return m.Spec
+	}
+	return ""
+}
+
+func (m *ExecInContainerRequest) GetContainerName() string {
+	if m != nil {
+		return m.ContainerName
+	}
+	return ""
+}
+
+func (m *ExecInContainerRequest) GetCmd() string {
+	if m != nil {
+		return m.Cmd
+	}
+	return ""
+}
+
+type ExecInContainerResponse struct {
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *ExecInContainerResponse) Reset()         { *m = ExecInContainerResponse{} }
+func (m *ExecInContainerResponse) String() string { return proto.CompactTextString(m) }
+func (*ExecInContainerResponse) ProtoMessage()    {}
+func (*ExecInContainerResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_d1a676bd7648f983, []int{3}
+}
+
+func (m *ExecInContainerResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ExecInContainerResponse.Unmarshal(m, b)
+}
+func (m *ExecInContainerResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ExecInContainerResponse.Marshal(b, m, deterministic)
+}
+func (m *ExecInContainerResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ExecInContainerResponse.Merge(m, src)
+}
+func (m *ExecInContainerResponse) XXX_Size() int {
+	return xxx_messageInfo_ExecInContainerResponse.Size(m)
+}
+func (m *ExecInContainerResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_ExecInContainerResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ExecInContainerResponse proto.InternalMessageInfo
+
 type LoadImageRequest struct {
 	URL                  string   `protobuf:"bytes,1,opt,name=URL,proto3" json:"URL,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
@@ -35,7 +223,7 @@ func (m *LoadImageRequest) Reset()         { *m = LoadImageRequest{} }
 func (m *LoadImageRequest) String() string { return proto.CompactTextString(m) }
 func (*LoadImageRequest) ProtoMessage()    {}
 func (*LoadImageRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d1a676bd7648f983, []int{0}
+	return fileDescriptor_d1a676bd7648f983, []int{4}
 }
 
 func (m *LoadImageRequest) XXX_Unmarshal(b []byte) error {
@@ -73,7 +261,7 @@ func (m *LoadImageResponse) Reset()         { *m = LoadImageResponse{} }
 func (m *LoadImageResponse) String() string { return proto.CompactTextString(m) }
 func (*LoadImageResponse) ProtoMessage()    {}
 func (*LoadImageResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d1a676bd7648f983, []int{1}
+	return fileDescriptor_d1a676bd7648f983, []int{5}
 }
 
 func (m *LoadImageResponse) XXX_Unmarshal(b []byte) error {
@@ -94,6 +282,76 @@ func (m *LoadImageResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_LoadImageResponse proto.InternalMessageInfo
 
+type UnloadImageRequest struct {
+	Tag                  string   `protobuf:"bytes,1,opt,name=tag,proto3" json:"tag,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *UnloadImageRequest) Reset()         { *m = UnloadImageRequest{} }
+func (m *UnloadImageRequest) String() string { return proto.CompactTextString(m) }
+func (*UnloadImageRequest) ProtoMessage()    {}
+func (*UnloadImageRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_d1a676bd7648f983, []int{6}
+}
+
+func (m *UnloadImageRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_UnloadImageRequest.Unmarshal(m, b)
+}
+func (m *UnloadImageRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_UnloadImageRequest.Marshal(b, m, deterministic)
+}
+func (m *UnloadImageRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UnloadImageRequest.Merge(m, src)
+}
+func (m *UnloadImageRequest) XXX_Size() int {
+	return xxx_messageInfo_UnloadImageRequest.Size(m)
+}
+func (m *UnloadImageRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_UnloadImageRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_UnloadImageRequest proto.InternalMessageInfo
+
+func (m *UnloadImageRequest) GetTag() string {
+	if m != nil {
+		return m.Tag
+	}
+	return ""
+}
+
+type UnloadImageResponse struct {
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *UnloadImageResponse) Reset()         { *m = UnloadImageResponse{} }
+func (m *UnloadImageResponse) String() string { return proto.CompactTextString(m) }
+func (*UnloadImageResponse) ProtoMessage()    {}
+func (*UnloadImageResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_d1a676bd7648f983, []int{7}
+}
+
+func (m *UnloadImageResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_UnloadImageResponse.Unmarshal(m, b)
+}
+func (m *UnloadImageResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_UnloadImageResponse.Marshal(b, m, deterministic)
+}
+func (m *UnloadImageResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UnloadImageResponse.Merge(m, src)
+}
+func (m *UnloadImageResponse) XXX_Size() int {
+	return xxx_messageInfo_UnloadImageResponse.Size(m)
+}
+func (m *UnloadImageResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_UnloadImageResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_UnloadImageResponse proto.InternalMessageInfo
+
 type MountDriveResponse struct {
 	Errors               []string `protobuf:"bytes,1,rep,name=errors,proto3" json:"errors,omitempty"`
 	IsSuccessful         bool     `protobuf:"varint,2,opt,name=is_successful,json=isSuccessful,proto3" json:"is_successful,omitempty"`
@@ -106,7 +364,7 @@ func (m *MountDriveResponse) Reset()         { *m = MountDriveResponse{} }
 func (m *MountDriveResponse) String() string { return proto.CompactTextString(m) }
 func (*MountDriveResponse) ProtoMessage()    {}
 func (*MountDriveResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d1a676bd7648f983, []int{2}
+	return fileDescriptor_d1a676bd7648f983, []int{8}
 }
 
 func (m *MountDriveResponse) XXX_Unmarshal(b []byte) error {
@@ -153,7 +411,7 @@ func (m *MountDriveRequest) Reset()         { *m = MountDriveRequest{} }
 func (m *MountDriveRequest) String() string { return proto.CompactTextString(m) }
 func (*MountDriveRequest) ProtoMessage()    {}
 func (*MountDriveRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d1a676bd7648f983, []int{3}
+	return fileDescriptor_d1a676bd7648f983, []int{9}
 }
 
 func (m *MountDriveRequest) XXX_Unmarshal(b []byte) error {
@@ -199,7 +457,7 @@ func (m *UnmountDriveRequest) Reset()         { *m = UnmountDriveRequest{} }
 func (m *UnmountDriveRequest) String() string { return proto.CompactTextString(m) }
 func (*UnmountDriveRequest) ProtoMessage()    {}
 func (*UnmountDriveRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d1a676bd7648f983, []int{4}
+	return fileDescriptor_d1a676bd7648f983, []int{10}
 }
 
 func (m *UnmountDriveRequest) XXX_Unmarshal(b []byte) error {
@@ -239,7 +497,7 @@ func (m *UnmountDriveResponse) Reset()         { *m = UnmountDriveResponse{} }
 func (m *UnmountDriveResponse) String() string { return proto.CompactTextString(m) }
 func (*UnmountDriveResponse) ProtoMessage()    {}
 func (*UnmountDriveResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d1a676bd7648f983, []int{5}
+	return fileDescriptor_d1a676bd7648f983, []int{11}
 }
 
 func (m *UnmountDriveResponse) XXX_Unmarshal(b []byte) error {
@@ -284,7 +542,7 @@ func (m *GetDrivesRequest) Reset()         { *m = GetDrivesRequest{} }
 func (m *GetDrivesRequest) String() string { return proto.CompactTextString(m) }
 func (*GetDrivesRequest) ProtoMessage()    {}
 func (*GetDrivesRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d1a676bd7648f983, []int{6}
+	return fileDescriptor_d1a676bd7648f983, []int{12}
 }
 
 func (m *GetDrivesRequest) XXX_Unmarshal(b []byte) error {
@@ -316,7 +574,7 @@ func (m *GetDrivesResponse) Reset()         { *m = GetDrivesResponse{} }
 func (m *GetDrivesResponse) String() string { return proto.CompactTextString(m) }
 func (*GetDrivesResponse) ProtoMessage()    {}
 func (*GetDrivesResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d1a676bd7648f983, []int{7}
+	return fileDescriptor_d1a676bd7648f983, []int{13}
 }
 
 func (m *GetDrivesResponse) XXX_Unmarshal(b []byte) error {
@@ -362,7 +620,7 @@ func (m *Drive) Reset()         { *m = Drive{} }
 func (m *Drive) String() string { return proto.CompactTextString(m) }
 func (*Drive) ProtoMessage()    {}
 func (*Drive) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d1a676bd7648f983, []int{8}
+	return fileDescriptor_d1a676bd7648f983, []int{14}
 }
 
 func (m *Drive) XXX_Unmarshal(b []byte) error {
@@ -457,7 +715,7 @@ func (m *Partition) Reset()         { *m = Partition{} }
 func (m *Partition) String() string { return proto.CompactTextString(m) }
 func (*Partition) ProtoMessage()    {}
 func (*Partition) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d1a676bd7648f983, []int{9}
+	return fileDescriptor_d1a676bd7648f983, []int{15}
 }
 
 func (m *Partition) XXX_Unmarshal(b []byte) error {
@@ -546,7 +804,7 @@ func (m *Result) Reset()         { *m = Result{} }
 func (m *Result) String() string { return proto.CompactTextString(m) }
 func (*Result) ProtoMessage()    {}
 func (*Result) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d1a676bd7648f983, []int{10}
+	return fileDescriptor_d1a676bd7648f983, []int{16}
 }
 
 func (m *Result) XXX_Unmarshal(b []byte) error {
@@ -592,7 +850,7 @@ func (m *Command) Reset()         { *m = Command{} }
 func (m *Command) String() string { return proto.CompactTextString(m) }
 func (*Command) ProtoMessage()    {}
 func (*Command) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d1a676bd7648f983, []int{11}
+	return fileDescriptor_d1a676bd7648f983, []int{17}
 }
 
 func (m *Command) XXX_Unmarshal(b []byte) error {
@@ -621,8 +879,14 @@ func (m *Command) GetCommand() string {
 }
 
 func init() {
+	proto.RegisterType((*ContainersRequest)(nil), "proto.ContainersRequest")
+	proto.RegisterType((*ContainersResponse)(nil), "proto.ContainersResponse")
+	proto.RegisterType((*ExecInContainerRequest)(nil), "proto.ExecInContainerRequest")
+	proto.RegisterType((*ExecInContainerResponse)(nil), "proto.ExecInContainerResponse")
 	proto.RegisterType((*LoadImageRequest)(nil), "proto.LoadImageRequest")
 	proto.RegisterType((*LoadImageResponse)(nil), "proto.LoadImageResponse")
+	proto.RegisterType((*UnloadImageRequest)(nil), "proto.UnloadImageRequest")
+	proto.RegisterType((*UnloadImageResponse)(nil), "proto.UnloadImageResponse")
 	proto.RegisterType((*MountDriveResponse)(nil), "proto.MountDriveResponse")
 	proto.RegisterType((*MountDriveRequest)(nil), "proto.MountDriveRequest")
 	proto.RegisterType((*UnmountDriveRequest)(nil), "proto.UnmountDriveRequest")
@@ -640,47 +904,58 @@ func init() {
 }
 
 var fileDescriptor_d1a676bd7648f983 = []byte{
-	// 639 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x02, 0xff, 0xb4, 0x54, 0x4d, 0x6f, 0xd3, 0x4c,
-	0x10, 0x6e, 0xd3, 0xc4, 0x49, 0x26, 0x69, 0xdf, 0x64, 0x5b, 0xbd, 0x18, 0x23, 0xa0, 0xb8, 0x95,
-	0xe0, 0x42, 0x84, 0x8a, 0x84, 0xc4, 0x05, 0x41, 0xc3, 0x57, 0xa5, 0x02, 0xc5, 0x28, 0x17, 0x2e,
-	0xd6, 0xc6, 0xde, 0xc2, 0x4a, 0xb6, 0x37, 0xec, 0xae, 0xa3, 0x86, 0x1b, 0xff, 0x82, 0x9f, 0xc5,
-	0x4f, 0x62, 0xbf, 0x62, 0x4c, 0x92, 0x03, 0x1c, 0x38, 0xd9, 0xf3, 0xcc, 0xb3, 0xb3, 0x3b, 0xcf,
-	0x7c, 0xc0, 0xf0, 0x73, 0xc9, 0x39, 0x8e, 0xf1, 0x27, 0x52, 0xc8, 0xd1, 0x8c, 0x33, 0xc9, 0x50,
-	0xcb, 0x7c, 0xc2, 0x63, 0x18, 0x9c, 0x33, 0x9c, 0x9e, 0xe5, 0xca, 0x17, 0x91, 0x2f, 0x25, 0x11,
-	0x12, 0x0d, 0x60, 0x67, 0x12, 0x9d, 0xfb, 0xdb, 0x87, 0xdb, 0xf7, 0xba, 0x91, 0xfe, 0x0d, 0xf7,
-	0x61, 0x58, 0x63, 0x89, 0x19, 0x2b, 0x04, 0x09, 0xdf, 0x03, 0x7a, 0xc3, 0xca, 0x42, 0x3e, 0xe7,
-	0x74, 0x5e, 0xa1, 0xe8, 0x7f, 0xf0, 0x08, 0xe7, 0x8c, 0x0b, 0x75, 0x7e, 0x47, 0x9d, 0x77, 0x16,
-	0x3a, 0x82, 0x5d, 0x2a, 0x62, 0x51, 0x26, 0x09, 0x11, 0xe2, 0xb2, 0xcc, 0xfc, 0x86, 0x0a, 0xdf,
-	0x89, 0xfa, 0x54, 0x7c, 0xa8, 0xb0, 0x70, 0x02, 0xc3, 0x7a, 0x48, 0xfb, 0x9c, 0xdb, 0xd0, 0x4b,
-	0xc9, 0x9c, 0x26, 0x24, 0xbe, 0xa4, 0x19, 0x71, 0xcf, 0x02, 0x0b, 0xbd, 0x54, 0x88, 0x26, 0xe4,
-	0xfa, 0x54, 0x3c, 0x63, 0xb4, 0x90, 0x26, 0xb0, 0x22, 0x18, 0xe8, 0x42, 0x23, 0xe1, 0x23, 0xd8,
-	0x9f, 0x14, 0xf9, 0x5f, 0x07, 0x56, 0x19, 0x1e, 0xfc, 0x7e, 0xce, 0xe5, 0x78, 0x00, 0x2d, 0x93,
-	0x95, 0x3b, 0x62, 0x8d, 0x3f, 0xcb, 0x10, 0xc1, 0xe0, 0x15, 0xb1, 0xe1, 0x84, 0x7b, 0x47, 0xf8,
-	0x18, 0x86, 0x35, 0xcc, 0xdd, 0x71, 0x0c, 0x5e, 0x6a, 0x10, 0xa3, 0x63, 0xef, 0xa4, 0x6f, 0xeb,
-	0x36, 0xb2, 0x2f, 0x71, 0xbe, 0xf0, 0x7b, 0x03, 0x5a, 0x06, 0x41, 0x08, 0x9a, 0x05, 0xce, 0x97,
-	0x59, 0x98, 0xff, 0xd5, 0x04, 0x1b, 0x6b, 0xca, 0xdd, 0x04, 0x10, 0xf4, 0x2b, 0x89, 0xa7, 0x0b,
-	0xa9, 0x2e, 0xda, 0x51, 0xfe, 0x66, 0xd4, 0xd5, 0xc8, 0xa9, 0x06, 0xd0, 0x1d, 0x50, 0x8f, 0x8f,
-	0x39, 0xc9, 0xd9, 0x1c, 0x4f, 0x55, 0x80, 0xa6, 0x49, 0xa8, 0x47, 0xd5, 0x2b, 0x1d, 0xa4, 0xaf,
-	0x95, 0x8b, 0x19, 0xf1, 0x5b, 0xf6, 0x5a, 0xfd, 0xaf, 0x85, 0x10, 0x84, 0x53, 0x9c, 0xc5, 0x45,
-	0x99, 0x4f, 0x09, 0xf7, 0x3d, 0xe3, 0xec, 0x5b, 0xf0, 0xad, 0xc1, 0xd0, 0x7d, 0x40, 0x42, 0x32,
-	0xae, 0x1a, 0x2a, 0x4e, 0x58, 0x21, 0x39, 0xcb, 0x32, 0xc5, 0x6c, 0x1b, 0xe6, 0xd0, 0x79, 0xc6,
-	0x95, 0x03, 0x3d, 0x00, 0x98, 0x61, 0x2e, 0xa9, 0xa4, 0x4a, 0x1d, 0xbf, 0x63, 0x24, 0x19, 0x38,
-	0x49, 0x2e, 0x96, 0x8e, 0xa8, 0xc6, 0x09, 0xbf, 0x35, 0xa0, 0x5b, 0x79, 0xfe, 0x89, 0x3c, 0x77,
-	0xe1, 0x3f, 0x3c, 0xc7, 0x34, 0xd3, 0x42, 0x38, 0x4e, 0xd3, 0x70, 0xf6, 0x2a, 0xd8, 0x12, 0x6f,
-	0x01, 0xe8, 0x1b, 0xc4, 0x42, 0x48, 0x92, 0x3b, 0xa9, 0x6a, 0xc8, 0x6a, 0x03, 0x7b, 0xab, 0x0d,
-	0xac, 0x1b, 0x4e, 0x85, 0x23, 0x99, 0xd3, 0xc7, 0x1a, 0xe8, 0xd0, 0x95, 0x07, 0xa7, 0x31, 0x2b,
-	0xb2, 0x85, 0x52, 0x45, 0x97, 0x07, 0x74, 0x79, 0x70, 0xfa, 0x4e, 0x21, 0xe1, 0x13, 0xf0, 0x54,
-	0x43, 0x95, 0x99, 0x44, 0x01, 0x74, 0xc8, 0x15, 0x95, 0x63, 0x96, 0x5a, 0x0d, 0x5a, 0x51, 0x65,
-	0x23, 0x1f, 0xda, 0xb9, 0x6a, 0x4f, 0x25, 0xb8, 0xd3, 0x60, 0x69, 0x86, 0x47, 0xd0, 0x1e, 0xb3,
-	0x3c, 0xc7, 0x45, 0xaa, 0x49, 0x89, 0xfd, 0x75, 0x1a, 0x2e, 0xcd, 0x93, 0x1f, 0x0d, 0x80, 0xd7,
-	0x7a, 0xbf, 0x3c, 0xd3, 0xeb, 0x05, 0x8d, 0x01, 0x7e, 0xcd, 0x30, 0xf2, 0x5d, 0x8d, 0xd6, 0xc6,
-	0x3a, 0xb8, 0xbe, 0xc1, 0xe3, 0x36, 0xcb, 0x16, 0x3a, 0x83, 0x7e, 0x7d, 0xf2, 0x50, 0xe0, 0xc8,
-	0x1b, 0xc6, 0x38, 0xb8, 0xb1, 0xd1, 0x57, 0x85, 0x7a, 0x0a, 0xdd, 0x6a, 0xba, 0xd0, 0x35, 0xc7,
-	0x5d, 0x9d, 0xc1, 0xc0, 0x5f, 0x77, 0xd4, 0x23, 0x54, 0xdb, 0xaf, 0x8a, 0xb0, 0xba, 0x35, 0xab,
-	0x08, 0xeb, 0x8b, 0x72, 0x0b, 0x8d, 0xa0, 0xf7, 0xe2, 0x8a, 0x24, 0x4b, 0x2d, 0xf7, 0x1c, 0xd5,
-	0xd9, 0xc1, 0xae, 0xb3, 0x6d, 0xad, 0xc2, 0xad, 0xd3, 0xf6, 0x47, 0xbb, 0x9e, 0xa7, 0x9e, 0xf9,
-	0x3c, 0xfc, 0x19, 0x00, 0x00, 0xff, 0xff, 0xa4, 0x5a, 0x95, 0xb0, 0xc1, 0x05, 0x00, 0x00,
+	// 811 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x02, 0xff, 0xb4, 0x56, 0x5b, 0x4f, 0xdb, 0x48,
+	0x14, 0x0e, 0x21, 0xd7, 0x93, 0x0b, 0xc9, 0xc0, 0x82, 0xf1, 0x0a, 0x96, 0x35, 0xec, 0xe5, 0x65,
+	0xd1, 0x8a, 0x95, 0x56, 0xea, 0x4b, 0xd5, 0x92, 0x16, 0x1a, 0x89, 0x52, 0x6a, 0xc4, 0x4b, 0x5f,
+	0x2c, 0xc7, 0x1e, 0xa8, 0x25, 0x5f, 0x52, 0xcf, 0x38, 0x22, 0x7d, 0xeb, 0x6f, 0xe8, 0x4b, 0x7f,
+	0x52, 0x7f, 0x56, 0xe7, 0xe6, 0xc1, 0x24, 0xae, 0xd4, 0x8a, 0xf6, 0x29, 0x73, 0xbe, 0x73, 0xe6,
+	0x9b, 0x33, 0xdf, 0x9c, 0x73, 0x1c, 0x18, 0xbe, 0xcd, 0xd2, 0xd4, 0x75, 0xdc, 0x1b, 0x1c, 0xd3,
+	0xc3, 0x69, 0x9a, 0xd0, 0x04, 0xd5, 0xc5, 0x8f, 0x75, 0x05, 0xc3, 0x51, 0x12, 0x53, 0x37, 0x88,
+	0x71, 0x4a, 0x6c, 0xfc, 0x2e, 0xc3, 0x84, 0x22, 0x04, 0xb5, 0xd8, 0x8d, 0xb0, 0xb1, 0xb2, 0xb7,
+	0xf2, 0x77, 0xdb, 0x16, 0x6b, 0x64, 0x40, 0xd3, 0x63, 0x81, 0xf8, 0x96, 0x1a, 0x55, 0x01, 0xe7,
+	0x26, 0x8f, 0x26, 0x53, 0xec, 0x19, 0xab, 0x32, 0x9a, 0xaf, 0xad, 0x0d, 0x40, 0x45, 0x5a, 0x32,
+	0x4d, 0x62, 0x82, 0xad, 0x8f, 0x2b, 0xb0, 0xf9, 0xfc, 0x16, 0x7b, 0xe3, 0x58, 0x3b, 0x7f, 0xd8,
+	0x91, 0xe8, 0x0f, 0xe8, 0x7b, 0x39, 0xab, 0x23, 0xb8, 0x6a, 0xc2, 0xdb, 0xd3, 0xe8, 0x39, 0x27,
+	0x1d, 0xc0, 0xaa, 0x17, 0xf9, 0x46, 0x5d, 0xf8, 0xf8, 0xd2, 0xda, 0x86, 0xad, 0xa5, 0xa4, 0x54,
+	0xc2, 0x07, 0x30, 0x38, 0x4b, 0x5c, 0x7f, 0x1c, 0x31, 0xe5, 0xf2, 0x4c, 0x19, 0xc1, 0x95, 0x7d,
+	0xa6, 0x12, 0xe5, 0x4b, 0x6b, 0x1d, 0x86, 0x85, 0x28, 0xb5, 0xf5, 0x4f, 0x40, 0x57, 0x71, 0x58,
+	0xb2, 0x99, 0xba, 0x37, 0xf9, 0x66, 0xb6, 0xb4, 0x7e, 0x81, 0xf5, 0x7b, 0x71, 0x6a, 0xfb, 0x6b,
+	0x40, 0x2f, 0x93, 0x2c, 0xa6, 0xcf, 0xd2, 0x60, 0xa6, 0x51, 0xb4, 0x09, 0x0d, 0x9c, 0xa6, 0x49,
+	0x4a, 0x18, 0xc3, 0x2a, 0x63, 0x50, 0x16, 0xda, 0x87, 0x5e, 0x40, 0x1c, 0x92, 0x79, 0x1e, 0x26,
+	0xe4, 0x3a, 0x0b, 0x85, 0x5e, 0x2d, 0xbb, 0x1b, 0x90, 0x4b, 0x8d, 0xf1, 0xa7, 0x2e, 0x52, 0xca,
+	0x84, 0x7e, 0x83, 0x8e, 0x8f, 0x67, 0x81, 0x87, 0x9d, 0xeb, 0x20, 0xcc, 0xe5, 0x07, 0x09, 0x9d,
+	0x30, 0x84, 0x07, 0x44, 0x7c, 0x97, 0x33, 0x4d, 0x82, 0x38, 0x7f, 0x08, 0x10, 0xd0, 0x05, 0x47,
+	0xac, 0xff, 0xf9, 0x05, 0xa2, 0xef, 0x26, 0x66, 0x37, 0xdc, 0xb8, 0xbf, 0x4f, 0xdd, 0x71, 0x03,
+	0xea, 0xe2, 0x56, 0x6a, 0x8b, 0x34, 0xbe, 0xed, 0x86, 0x08, 0x06, 0xa7, 0x58, 0xd2, 0xe5, 0xb5,
+	0x6c, 0x3d, 0x82, 0x61, 0x01, 0x53, 0x67, 0x1c, 0x40, 0xc3, 0x17, 0x88, 0xd0, 0xb1, 0x73, 0xd4,
+	0x95, 0x4d, 0x71, 0x28, 0x33, 0x51, 0x3e, 0xeb, 0x53, 0x15, 0xea, 0x02, 0x29, 0xad, 0xce, 0x85,
+	0x0b, 0x56, 0x97, 0x94, 0xdb, 0x01, 0x20, 0xc1, 0x7b, 0xec, 0x4c, 0xe6, 0x94, 0x1d, 0xc4, 0x4b,
+	0xb5, 0x66, 0xb7, 0x39, 0x72, 0xcc, 0x01, 0xf4, 0x3b, 0xb0, 0xe4, 0x9d, 0x14, 0x47, 0xc9, 0xcc,
+	0x9d, 0x84, 0xb2, 0x5a, 0x5b, 0x76, 0x27, 0x60, 0x59, 0x2a, 0x88, 0x1f, 0x4b, 0xe7, 0x53, 0xac,
+	0x8a, 0x55, 0xac, 0xb9, 0x10, 0x04, 0xa7, 0x81, 0x1b, 0x3a, 0x71, 0x16, 0x4d, 0x70, 0x6a, 0x34,
+	0x84, 0xb3, 0x2b, 0xc1, 0x73, 0x81, 0xa1, 0x7f, 0x00, 0x11, 0x9a, 0xa4, 0xac, 0xa0, 0x1c, 0x5e,
+	0xfd, 0x69, 0x12, 0x86, 0x2c, 0xb2, 0x29, 0x22, 0x87, 0xca, 0x33, 0xd2, 0x0e, 0xf4, 0x2f, 0xc0,
+	0xd4, 0x4d, 0x69, 0x40, 0x03, 0xa6, 0x8e, 0xd1, 0x12, 0x92, 0x0c, 0x94, 0x24, 0x17, 0xb9, 0xc3,
+	0x2e, 0xc4, 0x58, 0x1f, 0xaa, 0xd0, 0xd6, 0x9e, 0x9f, 0x22, 0xcf, 0x5f, 0xb0, 0xe6, 0xce, 0xdc,
+	0x20, 0xe4, 0x42, 0xa8, 0x98, 0x9a, 0x88, 0xe9, 0x6b, 0x58, 0x06, 0xee, 0x02, 0xf0, 0x13, 0xc8,
+	0x9c, 0x50, 0x1c, 0x29, 0xa9, 0x0a, 0xc8, 0x62, 0x01, 0x37, 0x16, 0x0b, 0x98, 0x17, 0x1c, 0xa3,
+	0xc3, 0xa1, 0xd2, 0x47, 0x1a, 0x68, 0x4f, 0x3d, 0x8f, 0xeb, 0x3b, 0x49, 0x1c, 0xce, 0x99, 0x2a,
+	0xfc, 0x79, 0x80, 0x3f, 0x8f, 0xeb, 0xbf, 0x62, 0x88, 0xf5, 0x18, 0x1a, 0xac, 0xa0, 0xb2, 0x90,
+	0x22, 0x13, 0x5a, 0xf8, 0x36, 0xa0, 0xa3, 0xc4, 0x97, 0x1a, 0xd4, 0x6d, 0x6d, 0xf3, 0x21, 0x16,
+	0xb1, 0xf2, 0x64, 0x82, 0xe7, 0x43, 0x4c, 0x99, 0xd6, 0x3e, 0x34, 0x47, 0x49, 0x14, 0xb9, 0xb1,
+	0x2f, 0x27, 0x9d, 0x58, 0x2a, 0x0d, 0x73, 0xf3, 0xe8, 0x73, 0x1d, 0xe0, 0x05, 0x1f, 0xde, 0x4f,
+	0xf9, 0xec, 0x46, 0x23, 0x80, 0xbb, 0x1e, 0x46, 0x86, 0x7a, 0xa3, 0xa5, 0xb6, 0x36, 0xb7, 0x4b,
+	0x3c, 0x6a, 0xb2, 0x54, 0xd0, 0x18, 0xba, 0xc5, 0xce, 0x43, 0xa6, 0x0a, 0x2e, 0x69, 0x63, 0xf3,
+	0xd7, 0x52, 0x9f, 0xa6, 0x7a, 0x02, 0x6d, 0xdd, 0x5d, 0x68, 0x4b, 0xc5, 0x2e, 0xf6, 0xa0, 0x69,
+	0x2c, 0x3b, 0x8a, 0x0c, 0x7a, 0x78, 0x6a, 0x86, 0xc5, 0xa1, 0xab, 0x19, 0x96, 0xe7, 0x6c, 0x05,
+	0x9d, 0x40, 0xa7, 0x30, 0x41, 0xd1, 0xb6, 0xce, 0x78, 0x71, 0xfa, 0x9a, 0x66, 0x99, 0xab, 0xc0,
+	0xd3, 0xb3, 0xb3, 0xbb, 0x8f, 0x00, 0xd1, 0xf2, 0x2e, 0x7d, 0x20, 0xb5, 0xbc, 0x25, 0xdf, 0xb8,
+	0x0a, 0x3a, 0x85, 0xfe, 0x25, 0x4d, 0xa6, 0x0f, 0x27, 0x1a, 0xc3, 0x40, 0xcc, 0x02, 0xfc, 0x70,
+	0x2a, 0x1b, 0xd6, 0x16, 0xbe, 0x71, 0x68, 0x47, 0xc5, 0x97, 0x7f, 0x90, 0xcd, 0xdd, 0xaf, 0xb9,
+	0x35, 0xe7, 0x21, 0x74, 0xb8, 0x33, 0xaf, 0xe1, 0xbe, 0x3e, 0x5f, 0xd8, 0x66, 0x4f, 0xd9, 0xb2,
+	0x47, 0xac, 0xca, 0x71, 0xf3, 0x8d, 0xfc, 0xcf, 0x31, 0x69, 0x88, 0x9f, 0xff, 0xbe, 0x04, 0x00,
+	0x00, 0xff, 0xff, 0x29, 0xd0, 0xfd, 0x08, 0x96, 0x08, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -699,6 +974,11 @@ type HurraAgentClient interface {
 	UnmountDrive(ctx context.Context, in *UnmountDriveRequest, opts ...grpc.CallOption) (*UnmountDriveResponse, error)
 	GetDrives(ctx context.Context, in *GetDrivesRequest, opts ...grpc.CallOption) (*GetDrivesResponse, error)
 	LoadImage(ctx context.Context, in *LoadImageRequest, opts ...grpc.CallOption) (*LoadImageResponse, error)
+	UnloadImage(ctx context.Context, in *UnloadImageRequest, opts ...grpc.CallOption) (*UnloadImageResponse, error)
+	RunContainers(ctx context.Context, in *ContainersRequest, opts ...grpc.CallOption) (*ContainersResponse, error)
+	StopContainers(ctx context.Context, in *ContainersRequest, opts ...grpc.CallOption) (*ContainersResponse, error)
+	RemoveContainers(ctx context.Context, in *ContainersRequest, opts ...grpc.CallOption) (*ContainersResponse, error)
+	ExecInContainer(ctx context.Context, in *ExecInContainerRequest, opts ...grpc.CallOption) (*ExecInContainerResponse, error)
 	ExecCommand(ctx context.Context, in *Command, opts ...grpc.CallOption) (*Result, error)
 }
 
@@ -746,6 +1026,51 @@ func (c *hurraAgentClient) LoadImage(ctx context.Context, in *LoadImageRequest, 
 	return out, nil
 }
 
+func (c *hurraAgentClient) UnloadImage(ctx context.Context, in *UnloadImageRequest, opts ...grpc.CallOption) (*UnloadImageResponse, error) {
+	out := new(UnloadImageResponse)
+	err := c.cc.Invoke(ctx, "/proto.HurraAgent/UnloadImage", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *hurraAgentClient) RunContainers(ctx context.Context, in *ContainersRequest, opts ...grpc.CallOption) (*ContainersResponse, error) {
+	out := new(ContainersResponse)
+	err := c.cc.Invoke(ctx, "/proto.HurraAgent/RunContainers", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *hurraAgentClient) StopContainers(ctx context.Context, in *ContainersRequest, opts ...grpc.CallOption) (*ContainersResponse, error) {
+	out := new(ContainersResponse)
+	err := c.cc.Invoke(ctx, "/proto.HurraAgent/StopContainers", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *hurraAgentClient) RemoveContainers(ctx context.Context, in *ContainersRequest, opts ...grpc.CallOption) (*ContainersResponse, error) {
+	out := new(ContainersResponse)
+	err := c.cc.Invoke(ctx, "/proto.HurraAgent/RemoveContainers", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *hurraAgentClient) ExecInContainer(ctx context.Context, in *ExecInContainerRequest, opts ...grpc.CallOption) (*ExecInContainerResponse, error) {
+	out := new(ExecInContainerResponse)
+	err := c.cc.Invoke(ctx, "/proto.HurraAgent/ExecInContainer", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *hurraAgentClient) ExecCommand(ctx context.Context, in *Command, opts ...grpc.CallOption) (*Result, error) {
 	out := new(Result)
 	err := c.cc.Invoke(ctx, "/proto.HurraAgent/ExecCommand", in, out, opts...)
@@ -761,6 +1086,11 @@ type HurraAgentServer interface {
 	UnmountDrive(context.Context, *UnmountDriveRequest) (*UnmountDriveResponse, error)
 	GetDrives(context.Context, *GetDrivesRequest) (*GetDrivesResponse, error)
 	LoadImage(context.Context, *LoadImageRequest) (*LoadImageResponse, error)
+	UnloadImage(context.Context, *UnloadImageRequest) (*UnloadImageResponse, error)
+	RunContainers(context.Context, *ContainersRequest) (*ContainersResponse, error)
+	StopContainers(context.Context, *ContainersRequest) (*ContainersResponse, error)
+	RemoveContainers(context.Context, *ContainersRequest) (*ContainersResponse, error)
+	ExecInContainer(context.Context, *ExecInContainerRequest) (*ExecInContainerResponse, error)
 	ExecCommand(context.Context, *Command) (*Result, error)
 }
 
@@ -779,6 +1109,21 @@ func (*UnimplementedHurraAgentServer) GetDrives(ctx context.Context, req *GetDri
 }
 func (*UnimplementedHurraAgentServer) LoadImage(ctx context.Context, req *LoadImageRequest) (*LoadImageResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method LoadImage not implemented")
+}
+func (*UnimplementedHurraAgentServer) UnloadImage(ctx context.Context, req *UnloadImageRequest) (*UnloadImageResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UnloadImage not implemented")
+}
+func (*UnimplementedHurraAgentServer) RunContainers(ctx context.Context, req *ContainersRequest) (*ContainersResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RunContainers not implemented")
+}
+func (*UnimplementedHurraAgentServer) StopContainers(ctx context.Context, req *ContainersRequest) (*ContainersResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method StopContainers not implemented")
+}
+func (*UnimplementedHurraAgentServer) RemoveContainers(ctx context.Context, req *ContainersRequest) (*ContainersResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RemoveContainers not implemented")
+}
+func (*UnimplementedHurraAgentServer) ExecInContainer(ctx context.Context, req *ExecInContainerRequest) (*ExecInContainerResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ExecInContainer not implemented")
 }
 func (*UnimplementedHurraAgentServer) ExecCommand(ctx context.Context, req *Command) (*Result, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ExecCommand not implemented")
@@ -860,6 +1205,96 @@ func _HurraAgent_LoadImage_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
+func _HurraAgent_UnloadImage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UnloadImageRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HurraAgentServer).UnloadImage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.HurraAgent/UnloadImage",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HurraAgentServer).UnloadImage(ctx, req.(*UnloadImageRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _HurraAgent_RunContainers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ContainersRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HurraAgentServer).RunContainers(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.HurraAgent/RunContainers",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HurraAgentServer).RunContainers(ctx, req.(*ContainersRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _HurraAgent_StopContainers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ContainersRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HurraAgentServer).StopContainers(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.HurraAgent/StopContainers",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HurraAgentServer).StopContainers(ctx, req.(*ContainersRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _HurraAgent_RemoveContainers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ContainersRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HurraAgentServer).RemoveContainers(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.HurraAgent/RemoveContainers",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HurraAgentServer).RemoveContainers(ctx, req.(*ContainersRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _HurraAgent_ExecInContainer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ExecInContainerRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HurraAgentServer).ExecInContainer(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.HurraAgent/ExecInContainer",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HurraAgentServer).ExecInContainer(ctx, req.(*ExecInContainerRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _HurraAgent_ExecCommand_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(Command)
 	if err := dec(in); err != nil {
@@ -897,6 +1332,26 @@ var _HurraAgent_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "LoadImage",
 			Handler:    _HurraAgent_LoadImage_Handler,
+		},
+		{
+			MethodName: "UnloadImage",
+			Handler:    _HurraAgent_UnloadImage_Handler,
+		},
+		{
+			MethodName: "RunContainers",
+			Handler:    _HurraAgent_RunContainers_Handler,
+		},
+		{
+			MethodName: "StopContainers",
+			Handler:    _HurraAgent_StopContainers_Handler,
+		},
+		{
+			MethodName: "RemoveContainers",
+			Handler:    _HurraAgent_RemoveContainers_Handler,
+		},
+		{
+			MethodName: "ExecInContainer",
+			Handler:    _HurraAgent_ExecInContainer_Handler,
 		},
 		{
 			MethodName: "ExecCommand",

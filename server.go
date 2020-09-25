@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"path"
 	"strconv"
 	"strings"
 	"syscall"
@@ -53,11 +54,11 @@ func (s *hurraAgentServer) GetDrives(ctx context.Context, drive *pb.GetDrivesReq
 		return nil, error
 	}
 
-	log.Debug("Retrieved Block Storage Info:", block)
+	log.Trace("Retrieved Block Storage Info:", block)
 
 	response := &pb.GetDrivesResponse{}
 	for _, disk := range block.Disks {
-		log.Debug("Found Disk: ", disk)
+		log.Trace("Found Disk: ", disk)
 		drive := &pb.Drive{
 			Name:              disk.Name,
 			DeviceFile:        "/dev/" + disk.Name,
@@ -70,10 +71,10 @@ func (s *hurraAgentServer) GetDrives(ctx context.Context, drive *pb.GetDrivesReq
 		response.Drives = append(response.Drives, drive)
 		for _, partition := range disk.Partitions {
 			if systemPartitions[partition.MountPoint] {
-				log.Debugf("Skipping system partition: ", partition)
+				log.Tracef("Skipping system partition: ", partition)
 				continue
 			}
-			log.Debug("Found Partition: ", partition)
+			log.Tracef("Found Partition: ", partition)
 
 			partition := &pb.Partition{
 				Name:           partition.Name,
@@ -87,7 +88,7 @@ func (s *hurraAgentServer) GetDrives(ctx context.Context, drive *pb.GetDrivesReq
 
 			// Determine available space (if partition is mounted, no way to know otherwise)
 			if partition.MountPoint != "" {
-				log.Debugf("Partition %s is mounted at '%s'. Attempting to find free space.", partition.Name, partition.MountPoint)
+				log.Tracef("Partition %s is mounted at '%s'. Attempting to find free space.", partition.Name, partition.MountPoint)
 				cmd := exec.Command("sh", "-c", fmt.Sprintf("df %s | tail -n +2 | awk '{print $4}'", partition.DeviceFile))
 				output, err := cmd.Output()
 				if err == nil {
@@ -105,12 +106,12 @@ func (s *hurraAgentServer) GetDrives(ctx context.Context, drive *pb.GetDrivesReq
 
 			if partition.Filesystem == "" {
 				//ghw does not return Filesystem for unmounted partition, attempt to find it on our own
-				log.Debug("Attempt to find Filesystem for Partition ", partition.Name)
+				log.Trace("Attempt to find Filesystem for Partition ", partition.Name)
 				cmd := exec.Command("sh", "-c", fmt.Sprintf("lsblk -o fstype %s | tail -n +2", partition.DeviceFile))
 				output, err := cmd.Output()
 				if err == nil {
 					partition.Filesystem = strings.Trim(string(output), "\n")
-					log.Debugf("Determined Filesystem of %v is %v", partition.Name, partition.Filesystem)
+					log.Tracef("Determined Filesystem of %v is %v", partition.Name, partition.Filesystem)
 				}
 
 			}
@@ -121,7 +122,7 @@ func (s *hurraAgentServer) GetDrives(ctx context.Context, drive *pb.GetDrivesReq
 			output, err := cmd.Output()
 			if err == nil {
 				partition.Label = strings.Trim(string(output), "\n")
-				log.Debugf("Determined Label of %v is %v", partition.Name, partition.Label)
+				log.Tracef("Determined Label of %v is %v", partition.Name, partition.Label)
 			}
 
 			drive.Partitions = append(drive.Partitions, partition)
@@ -260,6 +261,108 @@ func (s *hurraAgentServer) LoadImage(ctx context.Context, req *pb.LoadImageReque
 	log.Debugf("Done. Output: '%s'", strOut)
 
 	return &pb.LoadImageResponse{}, nil
+}
+
+func (s *hurraAgentServer) UnloadImage(ctx context.Context, req *pb.UnloadImageRequest) (*pb.UnloadImageResponse, error) {
+	log.Debugf("Unloading image %s", req.Tag)
+
+	// Load image in docker daemon
+	log.Debugf("Unloading image from Docker")
+	cmd := exec.Command("docker", "rmi", req.Tag)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return nil, fmt.Errorf("Error unloading image: %s", err)
+	}
+	strOut := strings.Replace(string(out), "\n", " ", -1)
+	log.Debugf("Done. Output: '%s'", strOut)
+
+	return &pb.UnloadImageResponse{}, nil
+}
+
+// Run containers (docker compose file).
+func (s *hurraAgentServer) RunContainers(ctx context.Context, req *pb.ContainersRequest) (*pb.ContainersResponse, error) {
+	log.Debugf("Running containers at root context %s", req.Context)
+	composeFilename := fmt.Sprintf("%s.yaml", req.Name)
+
+	// Open tmp file for writing image to
+	err := ioutil.WriteFile(path.Join(req.Context, composeFilename), []byte(req.Spec), 0644)
+	if err != nil {
+		return nil, fmt.Errorf("Could not write to compose file: %s", err)
+	}
+
+	// Start containers
+	log.Debugf("Start containers")
+	cmd := exec.Command("docker-compose", "-f", composeFilename, "-p", req.Name, "up", "-d")
+	cmd.Dir = req.Context
+	out, err := cmd.CombinedOutput()
+	strOut := strings.Replace(string(out), "\n", " ", -1)
+	if err != nil {
+		log.Printf("Failed to start containers. Command Output: %s", strOut)
+		return nil, fmt.Errorf("Error starting containers: %s. Output: %s", err, strOut)
+	}
+	log.Debugf("Done. Output: '%s'", strOut)
+
+	return &pb.ContainersResponse{}, nil
+}
+
+// Stop containers
+func (s *hurraAgentServer) StopContainers(ctx context.Context, req *pb.ContainersRequest) (*pb.ContainersResponse, error) {
+	log.Debugf("Running containers at root context %s", req.Context)
+	composeFilename := fmt.Sprintf("%s.yaml", req.Name)
+
+	// Start containers
+	log.Debugf("Stop containers")
+	cmd := exec.Command("docker-compose", "-f", composeFilename, "-p", req.Name, "stop")
+	cmd.Dir = req.Context
+	out, err := cmd.CombinedOutput()
+	strOut := strings.Replace(string(out), "\n", " ", -1)
+	if err != nil {
+		log.Printf("Failed to stop containers. Command Output: %s", strOut)
+		return nil, fmt.Errorf("Error stopping containers: %s. Output: %s", err, strOut)
+	}
+	log.Debugf("Done. Output: '%s'", strOut)
+
+	return &pb.ContainersResponse{}, nil
+}
+
+// Remove containers
+func (s *hurraAgentServer) RemoveContainers(ctx context.Context, req *pb.ContainersRequest) (*pb.ContainersResponse, error) {
+	log.Debugf("Running containers at root context %s", req.Context)
+	composeFilename := fmt.Sprintf("%s.yaml", req.Name)
+
+	// Remove containers
+	log.Debugf("Stop containers")
+	cmd := exec.Command("docker-compose", "-f", composeFilename, "-p", req.Name, "down", "-v")
+	cmd.Dir = req.Context
+	out, err := cmd.CombinedOutput()
+	strOut := strings.Replace(string(out), "\n", " ", -1)
+	if err != nil {
+		log.Printf("Failed to remove containers. Command Output: %s", strOut)
+		return nil, fmt.Errorf("Error remove containers: %s. Output: %s", err, strOut)
+	}
+	log.Debugf("Done. Output: '%s'", strOut)
+
+	return &pb.ContainersResponse{}, nil
+}
+
+// Exec command in a container
+func (s *hurraAgentServer) ExecInContainer(ctx context.Context, req *pb.ExecInContainerRequest) (*pb.ExecInContainerResponse, error) {
+	log.Debugf("Running containers at root context %s", req.Context)
+	composeFilename := fmt.Sprintf("%s.yaml", req.Name)
+
+	// Remove containers
+	log.Debugf("Executing '%s' in container %s/%s", req.Cmd, req.Name, req.ContainerName)
+	cmd := exec.Command("docker-compose", "-f", composeFilename, "-p", req.Name, "exec", req.Cmd)
+	cmd.Dir = req.Context
+	out, err := cmd.CombinedOutput()
+	strOut := strings.Replace(string(out), "\n", " ", -1)
+	if err != nil {
+		log.Printf("Failed to exec in container. Command Output: %s", strOut)
+		return nil, fmt.Errorf("Error exec in container: %s. Output: %s", err, strOut)
+	}
+	log.Debugf("Done. Output: '%s'", strOut)
+
+	return &pb.ExecInContainerResponse{}, nil
 }
 
 // ExecCommand returns the feature at the given point.

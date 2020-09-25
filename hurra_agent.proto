@@ -9,8 +9,35 @@ service HurraAgent {
     rpc UnmountDrive(UnmountDriveRequest) returns (UnmountDriveResponse) {}
     rpc GetDrives(GetDrivesRequest) returns (GetDrivesResponse) {}
     rpc LoadImage(LoadImageRequest) returns (LoadImageResponse) {}
+    rpc UnloadImage(UnloadImageRequest) returns (UnloadImageResponse) {}
+    rpc RunContainers(ContainersRequest) returns (ContainersResponse) {}
+    rpc StopContainers(ContainersRequest) returns (ContainersResponse) {}
+    rpc RemoveContainers(ContainersRequest) returns (ContainersResponse) {}
+    rpc ExecInContainer(ExecInContainerRequest) returns (ExecInContainerResponse) {}
+
     rpc ExecCommand(Command) returns (Result) {}
 }
+
+message ContainersRequest {
+    string name = 1;
+    string context = 2;
+    string spec = 3;
+}
+
+message ContainersResponse {
+}
+
+message ExecInContainerRequest {
+    string name = 1;
+    string context = 2;
+    string spec = 3;
+    string container_name = 4;
+    string cmd = 5;
+}
+
+message ExecInContainerResponse {
+}
+
 
 message LoadImageRequest {
     string URL = 1;
@@ -19,6 +46,16 @@ message LoadImageRequest {
 message LoadImageResponse {
 
 }
+
+message UnloadImageRequest {
+    string tag = 1;
+}
+
+message UnloadImageResponse {
+
+}
+
+
 
 message MountDriveResponse {
     repeated string errors = 1;
