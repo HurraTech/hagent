@@ -17,6 +17,7 @@ service HurraAgent {
     rpc StartContainerInSpec(ContainerSpecRequest) returns (ContainerSpecResponse) {}
     rpc StopContainerInSpec(ContainerSpecRequest) returns (ContainerSpecResponse) {}
     rpc RemoveContainerSpec(ContainerSpecRequest) returns (ContainerSpecResponse) {}
+    rpc GetContainerPortBindingInSpec(ContainerPortBindingInSpecRequest) returns (ContainerPortBindingInSpecResponse) {}
     rpc ExecInContainerSpec(ExecInContainerSpecRequest) returns (ExecInContainerSpecResponse) {}
 
     rpc ExecCommand(Command) returns (Result) {}
@@ -51,6 +52,20 @@ message ContainerSpecRequest {
 }
 
 message ContainerSpecResponse {
+}
+
+
+
+message ContainerPortBindingInSpecRequest {
+    string name = 1;
+    string context = 2;
+    string spec = 3;
+    string container_name = 4;
+    uint32 container_port = 5;
+}
+
+message ContainerPortBindingInSpecResponse {
+    uint32 port_binding = 1;
 }
 
 message ExecInContainerSpecRequest {

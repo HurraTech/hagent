@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"io"
@@ -11,7 +12,6 @@ import (
 	"os"
 	"os/exec"
 	"path"
-	"encoding/json"
 	"strconv"
 	"strings"
 	"syscall"
@@ -294,7 +294,7 @@ func (s *hurraAgentServer) RunContainer(ctx context.Context, req *pb.RunContaine
 	cmdArgs := []string{"run", "--rm", "-d", "--name", req.Name,
 		"-p", fmt.Sprintf("%d:%d", req.PortMappingSource, req.PortMappingTarget)}
 	for _, env := range strings.Split(req.Env, ",") {
-		cmdArgs = append(cmdArgs,"-e", env )
+		cmdArgs = append(cmdArgs, "-e", env)
 	}
 	cmdArgs = append(cmdArgs, req.Image)
 	cmd := exec.Command("docker", cmdArgs...)
@@ -302,6 +302,17 @@ func (s *hurraAgentServer) RunContainer(ctx context.Context, req *pb.RunContaine
 	strOut := strings.Replace(string(out), "\n", " ", -1)
 	if err != nil {
 		log.Errorf("Failed to start container. Command Output: %s", strOut)
+		return nil, fmt.Errorf("Error starting containers: %s. Output: %s", err, strOut)
+	}
+	log.Debugf("Done. Output: '%s'", strOut)
+
+	// Connect container to app network
+	log.Debugf("Connect container to app network")
+	cmd = exec.Command("docker", "network", "connect", fmt.Sprintf("%s_%s", req.Name, req.Name), req.Name)
+	out, err = cmd.CombinedOutput()
+	strOut = strings.Replace(string(out), "\n", " ", -1)
+	if err != nil {
+		log.Errorf("Failed to connect container to netowrk. Command Output: %s", strOut)
 		return nil, fmt.Errorf("Error starting containers: %s. Output: %s", err, strOut)
 	}
 	log.Debugf("Done. Output: '%s'", strOut)
@@ -364,6 +375,46 @@ func (s *hurraAgentServer) RunContainerSpec(ctx context.Context, req *pb.Contain
 	return &pb.ContainerSpecResponse{}, nil
 }
 
+// Find port binding in container spec
+func (s *hurraAgentServer) GetContainerPortBindingInSpec(ctx context.Context, req *pb.ContainerPortBindingInSpecRequest) (*pb.ContainerPortBindingInSpecResponse, error) {
+	log.Debugf("Determing port binding of container %s/%s/%d", req.Name, req.ContainerName, req.ContainerPort)
+	composeFilename := fmt.Sprintf("%s.yaml", req.Name)
+
+	// Open tmp file for writing image to
+	err := ioutil.WriteFile(path.Join(req.Context, composeFilename), []byte(req.Spec), 0644)
+	if err != nil {
+		return nil, fmt.Errorf("Could not write to compose file: %s", err)
+	}
+
+	// Start containers
+	log.Debugf("Start containers")
+	cmd := exec.Command("docker-compose", "-f", composeFilename, "-p", req.Name, "port", req.ContainerName, fmt.Sprintf("%d", req.ContainerPort))
+	cmd.Dir = req.Context
+	out, err := cmd.CombinedOutput()
+	strOut := strings.Replace(string(out), "\n", " ", -1)
+	strOut = strings.TrimSpace(strOut)
+	log.Debugf("Running %v", cmd)
+	if err != nil {
+		log.Errorf("Failed to start containers. Command Output: %s", strOut)
+		return nil, fmt.Errorf("Error starting containers: %s. Output: %s", err, strOut)
+	}
+	portMapping := strings.Split(strOut, ":")
+	if len(portMapping) != 2 {
+		log.Errorf("Unexpected output from docker-compose port command (%d). Command Output: %s", len(portMapping), strOut)
+		return nil, fmt.Errorf("Error determining port: Unexpected output from docker-compose port command. Command Output: %s", strOut)
+
+	}
+	port, err := strconv.Atoi(portMapping[1])
+	if err != nil {
+		log.Errorf("Failed to parse docker port output: %s: %s", strOut, err)
+		return nil, fmt.Errorf("Failed to parse docker port output: %s: %s", strOut, err)
+	}
+
+	log.Debugf("Done. Output: '%s'. Port: %d", strOut, port)
+
+	return &pb.ContainerPortBindingInSpecResponse{PortBinding: uint32(port)}, nil
+}
+
 // Stop containers
 func (s *hurraAgentServer) StopContainerSpec(ctx context.Context, req *pb.ContainerSpecRequest) (*pb.ContainerSpecResponse, error) {
 	log.Debugf("Running containers at root context %s", req.Context)
@@ -420,7 +471,7 @@ func (s *hurraAgentServer) ExecInContainerSpec(ctx context.Context, req *pb.Exec
 	}
 
 	for key, val := range envMap {
-		cmdArgs = append(cmdArgs, "-e", fmt.Sprintf("%s=%s", key, val) )
+		cmdArgs = append(cmdArgs, "-e", fmt.Sprintf("%s=%s", key, val))
 	}
 
 	// Append -T containerName COMMAND
@@ -490,7 +541,6 @@ func (s *hurraAgentServer) StartContainerInSpec(ctx context.Context, req *pb.Con
 
 	return &pb.ContainerSpecResponse{}, nil
 }
-
 
 // ExecCommand returns the feature at the given point.
 func (s *hurraAgentServer) ExecCommand(ctx context.Context, command *pb.Command) (*pb.Result, error) {
