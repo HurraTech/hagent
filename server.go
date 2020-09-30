@@ -354,7 +354,7 @@ func (s *hurraAgentServer) RunContainerSpec(ctx context.Context, req *pb.Contain
 	log.Debugf("Running containers at root context %s", req.Context)
 	composeFilename := fmt.Sprintf("%s.yaml", req.Name)
 
-	// Open tmp file for writing image to
+	// Create file to write componse file contents to
 	err := ioutil.WriteFile(path.Join(req.Context, composeFilename), []byte(req.Spec), 0644)
 	if err != nil {
 		return nil, fmt.Errorf("Could not write to compose file: %s", err)
