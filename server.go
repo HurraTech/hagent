@@ -41,27 +41,12 @@ type hurraAgentServer struct {
 	pb.UnimplementedHurraAgentServer
 }
 
-var systemPartitions = map[string]bool{
-	"/":         true,
-	"/data":     true,
-	"/boot":     true,
-	"/boot/efi": true,
-	"/uboot":    true,
-}
-
-var systemDevices = map[string]bool{
-	"/dev/mmcblk0p1": true,
-	"/dev/mmcblk0p2": true,
-	"/dev/mmcblk0p3": true,
-	"/dev/mmcblk0p4": true,
-}
-
 // Returns list of drives and their partitions
 func (s *hurraAgentServer) GetDrives(ctx context.Context, drive *pb.GetDrivesRequest) (*pb.GetDrivesResponse, error) {
 	log.Tracef("Request to Get Drives")
 	block, err := ghw.Block()
 	if err != nil {
-		error := fmt.Errorf("Error getting block storage info:", err)
+		error := fmt.Errorf("Error getting block storage info: %v", err)
 		log.Error(error)
 		return nil, error
 	}
@@ -82,11 +67,7 @@ func (s *hurraAgentServer) GetDrives(ctx context.Context, drive *pb.GetDrivesReq
 		}
 		response.Drives = append(response.Drives, drive)
 		for _, partition := range disk.Partitions {
-			if systemPartitions[partition.MountPoint] {
-				log.Tracef("Skipping system partition: ", partition)
-				continue
-			}
-			log.Tracef("Found Partition: ", partition)
+			log.Info("Found Partition: ", partition)
 
 			partition := &pb.Partition{
 				Name:           partition.Name,
