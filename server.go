@@ -338,13 +338,16 @@ func (s *hurraAgentServer) RunContainer(ctx context.Context, req *pb.RunContaine
 	log.Debugf("Done. Output: '%s'", strOut)
 
 	// Connect container to app network
-	log.Debugf("Connect container to app network")
-	cmd = exec.Command("docker", "network", "connect", fmt.Sprintf("%s_%s", req.Name, req.Name), req.Name)
-	out, err = cmd.CombinedOutput()
-	strOut = strings.Replace(string(out), "\n", " ", -1)
-	if err != nil {
-		log.Errorf("Failed to connect container to netowrk. Command Output: %s", strOut)
-		return nil, fmt.Errorf("Error starting containers: %s. Output: %s", err, strOut)
+	if false {
+		//TODO: Re-enable if there's value in connecting UI app to app containers network
+		log.Debugf("Connect container to app network")
+		cmd = exec.Command("docker", "network", "connect", fmt.Sprintf("%s_%s", req.Name, req.Name), req.Name)
+		out, err = cmd.CombinedOutput()
+		strOut = strings.Replace(string(out), "\n", " ", -1)
+		if err != nil {
+			log.Errorf("Failed to connect container to network. Command Output: %s", strOut)
+			return nil, fmt.Errorf("Error starting containers: %s. Output: %s", err, strOut)
+		}
 	}
 	log.Debugf("Done. Output: '%s'", strOut)
 
