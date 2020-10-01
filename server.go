@@ -12,6 +12,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"syscall"
@@ -30,6 +31,7 @@ var (
 	keyFile    = flag.String("key_file", "", "The TLS key file")
 	jsonDBFile = flag.String("json_db_file", "", "A json file containing a list of features")
 	listen     = flag.String("listen", "127.0.0.1", "Which interface IP to listen on")
+	tmpDir     = flag.String("tmp_dir", "", "Where to store temp files (default: system's tmp dircetory)")
 	port       = flag.Int("port", 10000, "The server port")
 	uid        = flag.Int("uid", -1, "Run commands using this user ID")
 	jawharUid  = flag.Int("jawharUid", 1000, "UID to be given access to mounted drives")
@@ -234,9 +236,20 @@ func (s *hurraAgentServer) UnmountDrive(ctx context.Context, drive *pb.UnmountDr
 // LoadImage load container image.
 func (s *hurraAgentServer) LoadImage(ctx context.Context, req *pb.LoadImageRequest) (*pb.LoadImageResponse, error) {
 	log.Debugf("Downloading image %s", req.URL)
+	tmpDirectory, err := filepath.Abs(*tmpDir)
+	if err != nil {
+		return nil, fmt.Errorf("Could not determine absolute path for temp directory: %s: %v", *tmpDir, err)
+	}
 
 	// Open tmp file for writing image to
-	img, err := ioutil.TempFile("", "image")
+	if _, err := os.Stat(tmpDirectory); os.IsNotExist(err) {
+		err := os.MkdirAll(tmpDirectory, 0755)
+		if err != nil {
+			return nil, fmt.Errorf("Could not create temp directory: %s: %v", tmpDirectory, err)
+		}
+	}
+
+	img, err := ioutil.TempFile(tmpDirectory, "image")
 	if err != nil {
 		return nil, fmt.Errorf("Could not create temp file: %s", err)
 	}
