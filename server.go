@@ -335,7 +335,7 @@ func (s *hurraAgentServer) RunContainer(ctx context.Context, req *pb.RunContaine
 		log.Errorf("Failed to start container. Command Output: %s", strOut)
 		return nil, fmt.Errorf("Error starting containers: %s. Output: %s", err, strOut)
 	}
-	log.Debugf("Done. Output: '%s'", strOut)
+	log.Debugf("Contained Started. Output: '%s'", strOut)
 
 	// Connect container to app network
 	if false {
@@ -348,8 +348,8 @@ func (s *hurraAgentServer) RunContainer(ctx context.Context, req *pb.RunContaine
 			log.Errorf("Failed to connect container to network. Command Output: %s", strOut)
 			return nil, fmt.Errorf("Error starting containers: %s. Output: %s", err, strOut)
 		}
+		log.Debugf("Container network connected. Output: '%s'", strOut)
 	}
-	log.Debugf("Done. Output: '%s'", strOut)
 
 	return &pb.RunContainerResponse{}, nil
 }
