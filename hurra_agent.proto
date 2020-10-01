@@ -85,6 +85,8 @@ message ExecInContainerSpecResponse {
 
 message LoadImageRequest {
     string URL = 1;
+    string username = 2;
+    string password = 3;
 }
 
 message LoadImageResponse {

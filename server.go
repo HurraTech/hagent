@@ -42,7 +42,16 @@ type hurraAgentServer struct {
 var systemPartitions = map[string]bool{
 	"/":         true,
 	"/data":     true,
+	"/boot":     true,
 	"/boot/efi": true,
+	"/uboot":    true,
+}
+
+var systemDevices = map[string]bool{
+	"/dev/mmcblk0p1": true,
+	"/dev/mmcblk0p2": true,
+	"/dev/mmcblk0p3": true,
+	"/dev/mmcblk0p4": true,
 }
 
 // Returns list of drives and their partitions
@@ -236,7 +245,16 @@ func (s *hurraAgentServer) LoadImage(ctx context.Context, req *pb.LoadImageReque
 	defer os.Remove(img.Name())
 
 	// Open image url
-	resp, err := http.Get(req.URL)
+	httpReq, err := http.NewRequest("GET", req.URL, nil)
+	if err != nil {
+		log.Errorf("Error opening HTTP request: %s", err)
+		return nil, fmt.Errorf("Error opening HTTP request: %s", err)
+	}
+
+	httpReq.SetBasicAuth(req.Username, req.Password)
+	client := &http.Client{}
+	resp, err := client.Do(httpReq)
+
 	if err != nil {
 		return nil, fmt.Errorf("Could not open URL: %s: %s", req.URL, err)
 	}
