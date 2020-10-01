@@ -67,7 +67,7 @@ func (s *hurraAgentServer) GetDrives(ctx context.Context, drive *pb.GetDrivesReq
 		}
 		response.Drives = append(response.Drives, drive)
 		for _, partition := range disk.Partitions {
-			log.Info("Found Partition: ", partition)
+			log.Trace("Found Partition: ", partition)
 
 			partition := &pb.Partition{
 				Name:           partition.Name,
