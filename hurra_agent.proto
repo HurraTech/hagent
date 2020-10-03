@@ -7,6 +7,10 @@ package proto;
 service HurraAgent {
     rpc MountDrive(MountDriveRequest) returns (MountDriveResponse) {}
     rpc UnmountDrive(UnmountDriveRequest) returns (UnmountDriveResponse) {}
+    rpc FormatDrive(FormatDriveRequest) returns (FormatDriveResponse) {}
+    rpc FormatPartition(FormatPartitionRequest) returns (FormatPartitionResponse) {}
+    rpc CopyFiles(CopyFilesRequest) returns (CopyFilesResponse) {}
+
     rpc GetDrives(GetDrivesRequest) returns (GetDrivesResponse) {}
     rpc LoadImage(LoadImageRequest) returns (LoadImageResponse) {}
     rpc UnloadImage(UnloadImageRequest) returns (UnloadImageResponse) {}
@@ -21,6 +25,30 @@ service HurraAgent {
     rpc ExecInContainerSpec(ExecInContainerSpecRequest) returns (ExecInContainerSpecResponse) {}
 
     rpc ExecCommand(Command) returns (Result) {}
+}
+
+message FormatDriveRequest {
+    string device_file = 1;
+}
+
+message FormatDriveResponse {
+}
+
+
+message FormatPartitionRequest {
+    string device_file = 1;
+}
+
+message FormatPartitionResponse {
+}
+
+message CopyFilesRequest {
+    string source = 1;
+    string target = 2;
+}
+
+message CopyFilesResponse {
+
 }
 
 message RunContainerRequest {
