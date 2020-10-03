@@ -130,7 +130,7 @@ func (s *hurraAgentServer) GetDrives(ctx context.Context, drive *pb.GetDrivesReq
 func (s *hurraAgentServer) MountDrive(ctx context.Context, drive *pb.MountDriveRequest) (*pb.MountDriveResponse, error) {
 	log.Info("Request to Mount %s at %s", drive.DeviceFile, drive.MountPoint)
 	response := &pb.MountDriveResponse{IsSuccessful: true}
-	var mountArgs = []string{drive.DeviceFile, drive.MountPoint, "-o", fmt.Sprintf("umask=0022,uid=%d,gid=%d", *jawharUid, *jawharUid)}
+	var mountArgs = []string{drive.DeviceFile, drive.MountPoint}
 	var error, err error
 	var out []byte
 	var cmd *exec.Cmd
