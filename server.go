@@ -147,19 +147,17 @@ func (s *hurraAgentServer) MountDrive(ctx context.Context, drive *pb.MountDriveR
 			log.Errorf("Failed to create mount point: %s (%s)", drive.MountPoint, errDir)
 			return nil, errDir
 		}
-
-		errDir = os.Chown(drive.MountPoint, *jawharUid, *jawharUid)
-		if errDir != nil {
-			log.Errorf("Failed to chown mount point %s to uid %s (%s)", drive.MountPoint, jawharUid, errDir.Error)
-			return nil, errDir
-		}
 	}
 
 	// Attempt to mount using default options
 	log.Infof("Attempting to mount with %s", drive.DeviceFile)
 
 	// First try with default options
-	err = syscall.Mount(drive.DeviceFile, drive.MountPoint, drive.Filesystem, 0, "")
+	var options string
+	if drive.Filesystem == "ntfs" || drive.Filesystem == "ext3" {
+		options = fmt.Sprintf("umask=0022,uid=%d,gid=%d", *jawharUid, *jawharUid)
+	}
+	err = syscall.Mount(drive.DeviceFile, drive.MountPoint, drive.Filesystem, 0, options)
 
 	if err != nil {
 		// Default options failed
@@ -174,6 +172,14 @@ func (s *hurraAgentServer) MountDrive(ctx context.Context, drive *pb.MountDriveR
 	if err != nil {
 		log.Errorf("Failed to determine mtab entry: %s", cmd)
 		return nil, fmt.Errorf("Failed to determine mtab entry: %s", cmd)
+	}
+
+	if drive.Filesystem != "ntfs" {
+		errDir := os.Chmod(drive.MountPoint, 0755)
+		if errDir != nil {
+			log.Errorf("Failed to update permissions on mount point %s to uid %d: %v", drive.MountPoint, *jawharUid, errDir)
+			return nil, errDir
+		}
 	}
 
 	f, err := os.OpenFile("/etc/fstab", os.O_APPEND|os.O_WRONLY, 0644)
