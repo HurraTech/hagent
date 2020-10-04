@@ -132,21 +132,20 @@ message UnloadImageResponse {
 
 
 message MountDriveResponse {
-    repeated string errors = 1;
     bool is_successful = 2;
 }
 
 message MountDriveRequest {
     string device_file = 1;
     string mount_point = 2;
+    string filesystem = 3;
 }
 
 message UnmountDriveRequest {
-    string device_file = 1;
+    string mount_point = 1;
 }
 
 message UnmountDriveResponse {
-    string error = 1;
     bool is_successful = 2;
 }
 

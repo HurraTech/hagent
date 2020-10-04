@@ -13,6 +13,7 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 	"syscall"
@@ -130,10 +131,7 @@ func (s *hurraAgentServer) GetDrives(ctx context.Context, drive *pb.GetDrivesReq
 func (s *hurraAgentServer) MountDrive(ctx context.Context, drive *pb.MountDriveRequest) (*pb.MountDriveResponse, error) {
 	log.Info("Request to Mount %s at %s", drive.DeviceFile, drive.MountPoint)
 	response := &pb.MountDriveResponse{IsSuccessful: true}
-	var mountArgs = []string{drive.DeviceFile, drive.MountPoint}
 	var error, err error
-	var out []byte
-	var cmd *exec.Cmd
 
 	// Create mount point if it does not exist
 	_, err = os.Stat(drive.MountPoint)
@@ -141,46 +139,47 @@ func (s *hurraAgentServer) MountDrive(ctx context.Context, drive *pb.MountDriveR
 		log.Printf("Mount point %s does not exist. Creating it now.", drive.MountPoint)
 		errDir := os.MkdirAll(drive.MountPoint, 0755)
 		if errDir != nil {
-			response.Errors = append(response.Errors, fmt.Sprintf("Failed to create mount point: %s (%s)", drive.MountPoint, errDir.Error()))
-			response.IsSuccessful = false
-			goto failed
+			log.Errorf("Failed to create mount point: %s (%s)", drive.MountPoint, errDir)
+			return nil, errDir
 		}
+
 		errDir = os.Chown(drive.MountPoint, *jawharUid, *jawharUid)
 		if errDir != nil {
-			response.Errors = append(response.Errors, fmt.Sprintf("Failed to chown mount point %s to uid %s (%s)", drive.MountPoint, jawharUid, errDir.Error()))
-			response.IsSuccessful = false
-			goto failed
+			log.Errorf("Failed to chown mount point %s to uid %s (%s)", drive.MountPoint, jawharUid, errDir.Error)
+			return nil, errDir
 		}
 	}
 
 	// Attempt to mount using default options
-	log.Printf("Attempting to mount with %s default options", drive.DeviceFile)
+	log.Infof("Attempting to mount with %s", drive.DeviceFile)
 
 	// First try with default options
-	cmd = exec.Command("mount", mountArgs...)
-	log.Debug("Running command: ", cmd)
-	out, err = cmd.CombinedOutput()
+	err = syscall.Mount(drive.DeviceFile, drive.MountPoint, drive.Filesystem, 0, "")
+
 	if err != nil {
 		// Default options failed
-		log.Printf("Failed to mount %s with default options: %s", drive.DeviceFile, err.Error())
-		log.Printf("Mounting using %s ntfs-3g", drive.DeviceFile)
-		response.Errors = append(response.Errors, fmt.Sprintf("Mount command failed [default options]: %s (%s)", out, err.Error()))
-
-		// Try with ntfs-3g driver
-		mountArgs = append(mountArgs, "-t", "ntfs-3g")
-		cmd = exec.Command("mount", mountArgs...)
-		out, err = cmd.CombinedOutput()
-		if err != nil {
-			log.Printf("Failed to mount %s using ntfs-3g: %s", drive.DeviceFile, err.Error())
-			response.Errors = append(response.Errors, fmt.Sprintf("Mount command failed [ntfs-3g]: %s (%s)", out, err.Error()))
-			response.IsSuccessful = false
-		}
+		log.Errorf("Failed to mount %s: %s", drive.DeviceFile, err)
+		return nil, err
 	}
 
-failed:
-	if response.IsSuccessful != true {
-		error = fmt.Errorf("All mount attempts failed: %s", response.Errors)
-		log.Printf("Mount failed: %s", error)
+	// Let's add to fstab
+	// Grab entry from mtab and copy it for fstab
+	cmd := fmt.Sprintf("cat /etc/mtab | grep %s", drive.MountPoint)
+	out, err := exec.Command("bash", "-c", cmd).Output()
+	if err != nil {
+		log.Errorf("Failed to determine mtab entry: %s", cmd)
+		return nil, fmt.Errorf("Failed to determine mtab entry: %s", cmd)
+	}
+
+	f, err := os.OpenFile("/etc/fstab", os.O_APPEND|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Errorf("Failed to open fstab: %s", err)
+		return nil, err
+	}
+	defer f.Close()
+	if _, err := f.WriteString(fmt.Sprintf("%s\n", out)); err != nil {
+		log.Errorf("Failed to write to fstab: %s", err)
+		return nil, err
 	}
 
 	return response, error
@@ -190,25 +189,50 @@ failed:
 // Create mount point if not already exists
 // Grant read/write access to non-root users (jawharUid)
 func (s *hurraAgentServer) UnmountDrive(ctx context.Context, drive *pb.UnmountDriveRequest) (*pb.UnmountDriveResponse, error) {
-	log.Info("Request to Unmount %s", drive.DeviceFile)
+	log.Infof("Request to Unmount %s", drive.MountPoint)
 	response := &pb.UnmountDriveResponse{IsSuccessful: true}
-	var umountArgs = []string{drive.DeviceFile}
 	var error, err error
-	var out []byte
-	var cmd *exec.Cmd
 
 	// Attempt to mount using default options
-	log.Printf("Attempting to unmount with %s", drive.DeviceFile)
+	log.Infof("Attempting to unmount %s", drive.MountPoint)
 
-	// First try with default options
-	cmd = exec.Command("umount", umountArgs...)
-	log.Debug("Running command: %v", cmd)
-	out, err = cmd.CombinedOutput()
+	err = syscall.Unmount(drive.MountPoint, 0)
 	if err != nil {
-		log.Printf("Failed to unmount %s: %s", drive.DeviceFile, err.Error())
-		response.Error = fmt.Sprintf("Umount command failed: %s (%s)", out, err.Error())
-		error = fmt.Errorf(response.Error)
-		response.IsSuccessful = false
+		log.Printf("Failed to unmount %s: %s", drive.MountPoint, err)
+		return nil, err
+	}
+
+	// Let's remove from fstab
+	f, err := os.OpenFile("/etc/fstab", os.O_RDONLY, 0644)
+	if err != nil {
+		log.Errorf("Failed to open fstab for reading: %s", err)
+		return nil, err
+	}
+	fstabLines, err := ioutil.ReadAll(f)
+	if err != nil {
+		log.Errorf("Failed to read fstab: %s", err)
+		return nil, err
+	}
+	re := regexp.MustCompile(fmt.Sprintf("(?m)[\r\n]+^.*%s.*$", strings.ReplaceAll(drive.MountPoint, "/", "\\/")))
+	newFstab := re.ReplaceAll(fstabLines, []byte(""))
+	err = f.Close()
+	if err != nil {
+		log.Errorf("Failed to close fstab read file descriptor: %s", err)
+		return nil, err
+	}
+
+	f, err = os.OpenFile("/etc/fstab", os.O_WRONLY|os.O_TRUNC, 0644)
+	if err != nil {
+		log.Errorf("Failed to open fstab for writing: %s", err)
+		return nil, err
+	}
+	defer f.Close()
+
+	log.Debugf("Writing to /etc/fstab: %s", fstabLines)
+	f.Write(newFstab)
+	if err != nil {
+		log.Errorf("Failed to write new entry to fstab: %s", err)
+		return nil, err
 	}
 
 	return response, error
