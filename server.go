@@ -36,6 +36,7 @@ var (
 	port       = flag.Int("port", 10000, "The server port")
 	uid        = flag.Int("uid", -1, "Run commands using this user ID")
 	jawharUid  = flag.Int("jawharUid", 1000, "UID to be given access to mounted drives")
+	verbose    = flag.Bool("verbose", false, "Enable verbose logging")
 )
 
 type hurraAgentServer struct {
@@ -64,13 +65,16 @@ func (s *hurraAgentServer) GetDrives(ctx context.Context, drive *pb.GetDrivesReq
 			IsRemovable:       disk.IsRemovable,
 			Type:              disk.DriveType.String(),
 			SerialNumber:      disk.SerialNumber,
+			Vendor:            disk.Vendor,
 			StorageController: disk.StorageController.String(),
 		}
 		response.Drives = append(response.Drives, drive)
+		var index uint32 = 0
 		for _, partition := range disk.Partitions {
 			log.Trace("Found Partition: ", partition)
 
 			partition := &pb.Partition{
+				Index:          index,
 				Name:           partition.Name,
 				DeviceFile:     "/dev/" + partition.Name,
 				SizeBytes:      partition.SizeBytes,
@@ -79,6 +83,7 @@ func (s *hurraAgentServer) GetDrives(ctx context.Context, drive *pb.GetDrivesReq
 				IsReadOnly:     partition.IsReadOnly,
 				AvailableBytes: 0,
 			}
+			index++
 
 			// Determine available space (if partition is mounted, no way to know otherwise)
 			if partition.MountPoint != "" {
@@ -606,7 +611,9 @@ func newServer() *hurraAgentServer {
 
 func main() {
 	flag.Parse()
-	log.SetLevel(log.DebugLevel)
+	if *verbose {
+		log.SetLevel(log.TraceLevel)
+	}
 	lis, err := net.Listen("tcp", fmt.Sprintf("%s:%d", *listen, *port))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
