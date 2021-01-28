@@ -632,6 +632,7 @@ func main() {
 		}
 		opts = []grpc.ServerOption{grpc.Creds(creds)}
 	}
+	log.Infof("Starting server on %s:%d", *listen, *port)
 	grpcServer := grpc.NewServer(opts...)
 	pb.RegisterHurraAgentServer(grpcServer, newServer())
 	grpcServer.Serve(lis)
