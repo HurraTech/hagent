@@ -88,7 +88,7 @@ func (s *hurraAgentServer) GetDrives(ctx context.Context, drive *pb.GetDrivesReq
 			// Determine available space (if partition is mounted, no way to know otherwise)
 			if partition.MountPoint != "" {
 				log.Tracef("Partition %s is mounted at '%s'. Attempting to find free space.", partition.Name, partition.MountPoint)
-				cmd := exec.Command("sh", "-c", fmt.Sprintf("df %s | tail -n +2 | awk '{print $4}'", partition.DeviceFile))
+				cmd := exec.Command("sh", "-c", fmt.Sprintf("df %s | tail -n +2 | awk '{print $4}'", partition.MountPoint))
 				output, err := cmd.Output()
 				if err == nil {
 					freespace, err := strconv.ParseUint(strings.Trim(string(output), "\n"), 10, 64)
@@ -157,7 +157,7 @@ func (s *hurraAgentServer) MountDrive(ctx context.Context, drive *pb.MountDriveR
 	if drive.Filesystem == "ntfs" || drive.Filesystem == "ext3" {
 		options = fmt.Sprintf("umask=0022,uid=%d,gid=%d", *jawharUid, *jawharUid)
 	}
-	err = syscall.Mount(drive.DeviceFile, drive.MountPoint, drive.Filesystem, 0, options)
+	_, err = exec.Command("mount", "-o", options, drive.DeviceFile, drive.MountPoint).Output()
 
 	if err != nil {
 		// Default options failed
