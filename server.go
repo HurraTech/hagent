@@ -610,6 +610,71 @@ func (s *hurraAgentServer) ExecCommand(ctx context.Context, command *pb.Command)
 	return result, nil
 }
 
+// UpdateSystem updates system image to specified version using mender
+func (s *hurraAgentServer) UpdateSystem(ctx context.Context, req *pb.UpdateSystemRequest) (*pb.UpdateSystemResult, error) {
+
+	tmpDirectory, err := filepath.Abs(*tmpDir)
+	if err != nil {
+		return nil, fmt.Errorf("Could not determine absolute path for temp directory: %s: %v", *tmpDir, err)
+	}
+
+	log.Debugf("Downloading image %s to %s", req.ImageUrl, tmpDirectory)
+
+	// // Open tmp file for writing image to
+	// if _, err := os.Stat(tmpDirectory); os.IsNotExist(err) {
+	// 	err := os.MkdirAll(tmpDirectory, 0755)
+	// 	if err != nil {
+	// 		return nil, fmt.Errorf("Could not create temp directory: %s: %v", tmpDirectory, err)
+	// 	}
+	// }
+
+	// img, err := ioutil.TempFile(tmpDirectory, "image")
+	// if err != nil {
+	// 	return nil, fmt.Errorf("Could not create temp file: %s", err)
+	// }
+	// log.Debugf("Writing to %s", img.Name())
+	// defer img.Close()
+	// defer os.Remove(img.Name())
+
+	// // Open image url
+	// httpReq, err := http.NewRequest("GET", req.URL, nil)
+	// if err != nil {
+	// 	log.Errorf("Error opening HTTP request: %s", err)
+	// 	return nil, fmt.Errorf("Error opening HTTP request: %s", err)
+	// }
+
+	// httpReq.SetBasicAuth(req.Username, req.Password)
+	// client := &http.Client{}
+	// resp, err := client.Do(httpReq)
+
+	// if err != nil {
+	// 	return nil, fmt.Errorf("Could not open URL: %s: %s", req.URL, err)
+	// }
+	// defer resp.Body.Close()
+
+	// if resp.StatusCode != http.StatusOK {
+	// 	return nil, fmt.Errorf("Image server returned bad status: %s", resp.Status)
+	// }
+
+	// _, err = io.Copy(img, resp.Body)
+	// if err != nil {
+	// 	return nil, fmt.Errorf("Error downloading image: %s: %s", req.URL, err)
+	// }
+
+	// // Load image in docker daemon
+	// log.Debugf("Loading image in Docker")
+	// cmd := exec.Command("docker", "load", "-i", img.Name())
+	// out, err := cmd.CombinedOutput()
+	// strOut := strings.Replace(string(out), "\n", " ", -1)
+	// if err != nil {
+	// 	log.Errorf("Failed to load image. Command Output: %s", strOut)
+	// 	return nil, fmt.Errorf("Error loading image: %s", err)
+	// }
+	// log.Debugf("Done. Output: '%s'", strOut)
+
+	return &pb.UpdateSystemResult{}, nil
+}
+
 func newServer() *hurraAgentServer {
 	s := &hurraAgentServer{}
 	return s

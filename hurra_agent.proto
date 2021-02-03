@@ -24,7 +24,21 @@ service HurraAgent {
     rpc GetContainerPortBindingInSpec(ContainerPortBindingInSpecRequest) returns (ContainerPortBindingInSpecResponse) {}
     rpc ExecInContainerSpec(ExecInContainerSpecRequest) returns (ExecInContainerSpecResponse) {}
 
+    rpc UpdateSystem(UpdateSystemRequest) returns (UpdateSystemResult) {}
+    rpc UpdateSystemStatus(UpdateSystemStatusRequest) returns (UpdateSystemResult) {}
+
     rpc ExecCommand(Command) returns (Result) {}
+}
+
+message UpdateSystemStatusRequest { }
+
+message UpdateSystemResult {
+    string status = 1;
+}
+
+message UpdateSystemRequest {
+    string image_url = 1;
+    string hash = 2;
 }
 
 message FormatDriveRequest {
