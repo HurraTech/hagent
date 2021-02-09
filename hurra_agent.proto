@@ -34,11 +34,14 @@ message UpdateSystemStatusRequest { }
 
 message UpdateSystemResult {
     string status = 1;
+    string version = 2;
 }
 
 message UpdateSystemRequest {
     string image_url = 1;
-    string hash = 2;
+    string username = 2;
+    string password = 3;
+    string hash = 4;
 }
 
 message FormatDriveRequest {
