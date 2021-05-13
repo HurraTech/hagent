@@ -7,9 +7,9 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"math"
 	"io"
 	"io/ioutil"
+	"math"
 	"net"
 	"net/http"
 	"os"
@@ -20,12 +20,16 @@ import (
 	"strconv"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/jaypipes/ghw"
+	"github.com/mackerelio/go-osstat/cpu"
+	"github.com/mackerelio/go-osstat/memory"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 
 	log "github.com/sirupsen/logrus"
+	"hurracloud.io/agent/disk"
 	pb "hurracloud.io/agent/proto"
 )
 
@@ -78,7 +82,7 @@ func (s *hurraAgentServer) GetDrives(ctx context.Context, drive *pb.GetDrivesReq
 			log.Trace("Found Partition: ", partition)
 			if partition.MountPoint == "" {
 				// last-resort attempt to find mountpoint if ghw fails to detect it
-				cmd := exec.Command("lsblk", "/dev/" + partition.Name, "-o", "MOUNTPOINT", "-n")
+				cmd := exec.Command("lsblk", "/dev/"+partition.Name, "-o", "MOUNTPOINT", "-n")
 				output, err := cmd.Output()
 				if err == nil {
 					partition.MountPoint = strings.Trim(string(output), "\n")
@@ -140,6 +144,48 @@ func (s *hurraAgentServer) GetDrives(ctx context.Context, drive *pb.GetDrivesReq
 		}
 	}
 	return response, nil
+}
+
+// Get system stats such as uptime, cpu load, memory,..etc.
+func (s *hurraAgentServer) GetSystemStats(ctx context.Context, drive *pb.GetSystemStatsRequest) (*pb.GetSystemStatsResponse, error) {
+	log.Debug("Request to Get System Stats")
+	response := &pb.GetSystemStatsResponse{}
+	memory, err := memory.Get()
+	if err == nil {
+		response.MemoryTotal = memory.Total
+		response.MemoryCached = memory.Cached
+		response.MemoryFree = memory.Free
+	}
+
+	// CPU idle %
+	var total float64
+	var load float64
+	var after *cpu.Stats
+	before, err := cpu.Get()
+	if err != nil {
+		log.Errorf("Could not get cpu stats, skipping it: %s", err)
+		goto disk_stats
+	}
+	time.Sleep(time.Duration(1) * time.Second)
+	after, err = cpu.Get()
+	if err != nil {
+		log.Errorf("Could not get cpu stats, skipping it: %s", err)
+		goto disk_stats
+	}
+	total = float64(after.Total - before.Total)
+	load = float64(after.User-before.User) + float64(after.System-before.System)
+	response.LoadAverage = load / total * 100
+
+disk_stats:
+	disk, err := disk.Get()
+	if err == nil {
+		log.Debugf("Library returned %v", disk)
+		response.DiskReads += disk.ReadsPerSecond
+		response.DiskWrites += disk.WritesPerSecond
+	} else {
+		log.Errorf("Could not get disk stats, skipping it: %s", err)
+	}
+	return response, err
 }
 
 // Mount specified device on specified mount point.

@@ -3,8 +3,8 @@ tmp_dir = "tmp"
 
 [build]
 cmd = "go build -o ./tmp/hagent server.go"
-bin = "tmp/hagent"
-full_bin = "./tmp/hagent"
+bin = "tmp/hagent --verbose"
+full_bin = "./tmp/hagent --verbose"
 include_ext = ["go", "tpl", "tmpl", "html"]
 exclude_dir = ["assets", "tmp", "vendor", "frontend/node_modules"]
 include_dir = []

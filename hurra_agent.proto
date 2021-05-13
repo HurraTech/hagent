@@ -11,6 +11,7 @@ service HurraAgent {
     rpc FormatPartition(FormatPartitionRequest) returns (FormatPartitionResponse) {}
     rpc CopyFiles(CopyFilesRequest) returns (CopyFilesResponse) {}
 
+    rpc GetSystemStats(GetSystemStatsRequest) returns (GetSystemStatsResponse) {}
     rpc GetDrives(GetDrivesRequest) returns (GetDrivesResponse) {}
     rpc LoadImage(LoadImageRequest) returns (LoadImageResponse) {}
     rpc UnloadImage(UnloadImageRequest) returns (UnloadImageResponse) {}
@@ -28,6 +29,20 @@ service HurraAgent {
     rpc UpdateSystemStatus(UpdateSystemStatusRequest) returns (UpdateSystemResult) {}
 
     rpc ExecCommand(Command) returns (Result) {}
+}
+
+message GetSystemStatsRequest { }
+
+message GetSystemStatsResponse {
+    double load_average = 1;
+    uint64 uptime = 2;
+    uint64 memory_total = 3;
+    uint64 memory_free = 4;
+    uint64 memory_cached = 5;
+    uint64 disk_reads = 6;
+    uint64 disk_writes = 7; 
+    uint64 network_received = 8;
+    uint64 network_sent = 9;
 }
 
 message UpdateSystemStatusRequest { }
