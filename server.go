@@ -25,6 +25,7 @@ import (
 	"github.com/jaypipes/ghw"
 	"github.com/mackerelio/go-osstat/cpu"
 	"github.com/mackerelio/go-osstat/memory"
+	"github.com/mackerelio/go-osstat/network"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 
@@ -150,6 +151,9 @@ func (s *hurraAgentServer) GetDrives(ctx context.Context, drive *pb.GetDrivesReq
 func (s *hurraAgentServer) GetSystemStats(ctx context.Context, drive *pb.GetSystemStatsRequest) (*pb.GetSystemStatsResponse, error) {
 	log.Debug("Request to Get System Stats")
 	response := &pb.GetSystemStatsResponse{}
+	var networks []network.Stats
+
+	// Memory stats
 	memory, err := memory.Get()
 	if err == nil {
 		response.MemoryTotal = memory.Total
@@ -157,25 +161,37 @@ func (s *hurraAgentServer) GetSystemStats(ctx context.Context, drive *pb.GetSyst
 		response.MemoryFree = memory.Free
 	}
 
-	// CPU idle %
+	// CPU usage %
 	var total float64
 	var load float64
 	var after *cpu.Stats
 	before, err := cpu.Get()
 	if err != nil {
-		log.Errorf("Could not get cpu stats, skipping it: %s", err)
+		log.Errorf("Could not get cpu stats, skipping: %s", err)
 		goto disk_stats
 	}
 	time.Sleep(time.Duration(1) * time.Second)
 	after, err = cpu.Get()
 	if err != nil {
-		log.Errorf("Could not get cpu stats, skipping it: %s", err)
+		log.Errorf("Could not get cpu stats, skipping: %s", err)
 		goto disk_stats
 	}
 	total = float64(after.Total - before.Total)
 	load = float64(after.User-before.User) + float64(after.System-before.System)
 	response.LoadAverage = load / total * 100
 
+	// Network stats
+	networks, err = network.Get()
+	if err != nil {
+		log.Errorf("Could not get network stats, skipping: %s", err)
+		goto disk_stats
+	}
+	for _, net := range networks {
+		response.NetworkReceived += net.RxBytes
+		response.NetworkSent += net.TxBytes
+	}
+
+	// Disk stats
 disk_stats:
 	disk, err := disk.Get()
 	if err == nil {
