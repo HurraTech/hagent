@@ -31,7 +31,7 @@ func Get() (*DiskStats, error) {
 
 	var after_total_reads uint64
 	var after_total_writes uint64
-	for _, disk := range before {
+	for _, disk := range after {
 		after_total_reads += disk.ReadsCompleted
 		after_total_writes += disk.WritesCompleted
 	}
