@@ -41,5 +41,5 @@ func Get() (*DiskStats, error) {
 	return &DiskStats{
 		ReadsPerSecond:  rps,
 		WritesPerSecond: wps,
-	}
+	}, nil
 }
