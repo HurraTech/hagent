@@ -26,6 +26,7 @@ import (
 	"github.com/mackerelio/go-osstat/cpu"
 	"github.com/mackerelio/go-osstat/memory"
 	"github.com/mackerelio/go-osstat/network"
+	"github.com/mackerelio/go-osstat/uptime"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 
@@ -168,18 +169,19 @@ func (s *hurraAgentServer) GetSystemStats(ctx context.Context, drive *pb.GetSyst
 	before, err := cpu.Get()
 	if err != nil {
 		log.Errorf("Could not get cpu stats, skipping: %s", err)
-		goto disk_stats
+		goto network_stats
 	}
 	time.Sleep(time.Duration(1) * time.Second)
 	after, err = cpu.Get()
 	if err != nil {
 		log.Errorf("Could not get cpu stats, skipping: %s", err)
-		goto disk_stats
+		goto network_stats
 	}
 	total = float64(after.Total - before.Total)
 	load = float64(after.User-before.User) + float64(after.System-before.System)
 	response.LoadAverage = load / total * 100
 
+network_stats:
 	// Network stats
 	networks, err = network.Get()
 	if err != nil {
@@ -201,6 +203,13 @@ disk_stats:
 	} else {
 		log.Errorf("Could not get disk stats, skipping it: %s", err)
 	}
+
+	// Uptime
+	up, err := uptime.Get()
+	if err == nil {
+		response.Uptime = up.Seconds()
+	}
+
 	return response, err
 }
 

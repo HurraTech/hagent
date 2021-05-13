@@ -35,7 +35,7 @@ message GetSystemStatsRequest { }
 
 message GetSystemStatsResponse {
     double load_average = 1;
-    uint64 uptime = 2;
+    double uptime = 2;
     uint64 memory_total = 3;
     uint64 memory_free = 4;
     uint64 memory_cached = 5;
