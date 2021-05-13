@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"math"
 	"io"
 	"io/ioutil"
 	"net"
@@ -91,12 +92,12 @@ func (s *hurraAgentServer) GetDrives(ctx context.Context, drive *pb.GetDrivesReq
 			// Determine available space (if partition is mounted, no way to know otherwise)
 			if partition.MountPoint != "" {
 				log.Tracef("Partition %s is mounted at '%s'. Attempting to find free space.", partition.Name, partition.MountPoint)
-				cmd := exec.Command("sh", "-c", fmt.Sprintf("df %s | tail -n +2 | awk '{print $4}'", partition.MountPoint))
+				cmd := exec.Command("sh", "-c", fmt.Sprintf("df -h %s | tail -n +2 | awk '{print $4}'", partition.MountPoint))
 				output, err := cmd.Output()
 				if err == nil {
-					freespace, err := strconv.ParseUint(strings.Trim(string(output), "\n"), 10, 64)
+					freespace, err := strconv.ParseUint(strings.Trim(strings.Trim(string(output), "Gi\n"), "G"), 10, 64)
 					if err == nil {
-						partition.AvailableBytes = freespace
+						partition.AvailableBytes = freespace * uint64(math.Pow(1024, 3))
 						log.Tracef("Determined Available Bytes for %v to be %v", partition.Name, partition.AvailableBytes)
 					} else {
 						log.Errorf("Could not parse df command output: %s: %s", output, err)
