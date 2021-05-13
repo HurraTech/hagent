@@ -76,6 +76,14 @@ func (s *hurraAgentServer) GetDrives(ctx context.Context, drive *pb.GetDrivesReq
 		var index uint32 = 0
 		for _, partition := range disk.Partitions {
 			log.Trace("Found Partition: ", partition)
+			if partition.MountPoint == "" {
+				// last-resort attempt to find mountpoint if ghw fails to detect it
+				cmd := exec.Command("lsblk", "/dev/" + partition.Name, "-o", "MOUNTPOINT", "-n")
+				output, err := cmd.Output()
+				if err == nil {
+					partition.MountPoint = strings.Trim(string(output), "\n")
+				}
+			}
 
 			partition := &pb.Partition{
 				Index:          index,
