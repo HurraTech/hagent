@@ -422,7 +422,8 @@ func (s *hurraAgentServer) RunContainer(ctx context.Context, req *pb.RunContaine
 	// Start containers
 	log.Debugf("Run containers")
 	cmdArgs := []string{"run", "--rm", "-d", "--name", req.Name,
-		"-p", fmt.Sprintf("%d:%d", req.PortMappingSource, req.PortMappingTarget)}
+		"-p", fmt.Sprintf("%d:%d", req.PortMappingSource, req.PortMappingTarget),
+		"--add-host", "host.docker.internal:host-gateway"}
 	for _, env := range strings.Split(req.Env, ",") {
 		cmdArgs = append(cmdArgs, "-e", env)
 	}
