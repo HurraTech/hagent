@@ -67,6 +67,10 @@ func (s *hurraAgentServer) GetDrives(ctx context.Context, drive *pb.GetDrivesReq
 
 	response := &pb.GetDrivesResponse{}
 	for _, disk := range block.Disks {
+		if disk.SerialNumber == "unknown" {
+			log.Trace("Warning Found Disk with unknown serial number, will skip it: ", disk)
+			continue
+		}
 		log.Trace("Found Disk: ", disk)
 		drive := &pb.Drive{
 			Name:              disk.Name,
@@ -106,7 +110,7 @@ func (s *hurraAgentServer) GetDrives(ctx context.Context, drive *pb.GetDrivesReq
 			// Determine available space (if partition is mounted, no way to know otherwise)
 			if partition.MountPoint != "" {
 				log.Tracef("Partition %s is mounted at '%s'. Attempting to find free space.", partition.Name, partition.MountPoint)
-				cmd := exec.Command("sh", "-c", fmt.Sprintf("df -h %s | tail -n +2 | awk '{print $4}'", partition.MountPoint))
+				cmd := exec.Command("sh", "-c", fmt.Sprintf("df %s | tail -n +2 | awk '{print $4}'", partition.MountPoint))
 				output, err := cmd.Output()
 				if err == nil {
 					freespace, err := strconv.ParseUint(strings.Trim(strings.Trim(string(output), "Gi\n"), "G"), 10, 64)
